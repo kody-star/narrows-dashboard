@@ -92,23 +92,24 @@
   align-items: center;
   justify-content: center;
 
-  padding: 10px 22px;
-  border-radius: 16px;
+  padding: 8px 28px;
 
-  font-size: 28px;
+  border-radius: 14px;
+
+  font-size: 30px;
   font-weight: 900;
   color: white;
 
   box-shadow: 0 10px 25px rgba(0,0,0,0.12);
 
-  /* KEY FIXES */
-  width: max-content;     /* prevents full-width expansion */
-  max-width: 420px;       /* matches single card scale */
-  margin: 0 auto;         /* centers it */
+  /* KEY FIX: swap dimensions behavior */
+  width: 320px;        /* fixed, matches visual weight of metric cards */
+  height: 64px;        /* keeps it short, not tall */
 
-  white-space: nowrap;    /* prevents wrapping height growth */
+  margin: 0 auto;
+
+  white-space: nowrap;
 }
-
     .gear {
       text-align: center;
       font-size: 22px;
