@@ -21,7 +21,7 @@
       padding: 3vh 4vw;
       box-sizing: border-box;
       display: grid;
-      grid-template-rows: auto auto 1fr;
+      grid-template-rows: auto auto auto 1fr;
       gap: 18px;
     }
 
@@ -49,7 +49,6 @@
       border: 1px solid #e5e7eb;
       text-align: center;
 
-      /* helps perfect centering inside card */
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -62,7 +61,6 @@
       line-height: 1;
     }
 
-    /* WATER TEMP STILL SMALLER + CENTERED */
     .tempNumber {
       font-size: 75px;
       font-weight: 900;
@@ -78,7 +76,6 @@
       opacity: 0.8;
     }
 
-    /* FLOW TREND NOW INSIDE CFS CARD */
     .trendInside {
       margin-top: 10px;
       font-size: 18px;
@@ -86,28 +83,38 @@
       opacity: 0.85;
     }
 
-    /* STATUS (SMALLER AS REQUESTED) */
- .statusBlock {
-  background: white;
-  border-radius: 18px;
-  padding: 18px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-  border: 1px solid #e5e7eb;
+    /* STATUS LABEL */
+    .statusLabel {
+      text-align: center;
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      opacity: 0.7;
+      margin-bottom: -8px;
+    }
 
-  width: 420px;         /* EXACT match to metric cards */
-  height: 180px;        /* matches visual height of CFS/temp cards */
+    /* STATUS CARD = SAME SIZE AS METRICS */
+    .statusBlock {
+      width: 420px;
+      height: 180px;
+      margin: 0 auto;
 
-  margin: 0 auto;
+      background: white;
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      border: 1px solid #e5e7eb;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
 
-  font-size: 42px;
-  font-weight: 900;
-  color: white; /* still overridden by JS background */
-  text-align: center;
-}
+      font-size: 42px;
+      font-weight: 900;
+      color: white;
+      text-align: center;
+    }
+
     .gear {
       text-align: center;
       font-size: 22px;
@@ -177,14 +184,12 @@
   <!-- METRICS -->
   <div class="metrics">
 
-    <!-- CFS CARD -->
     <div class="card">
       <div id="flow" class="bigNumber">--</div>
       <div class="label">CFS</div>
       <div id="trend" class="trendInside">--</div>
     </div>
 
-    <!-- TEMP CARD -->
     <div class="card">
       <div id="temp" class="tempNumber">--</div>
       <div class="label">WATER TEMP</div>
@@ -192,7 +197,10 @@
 
   </div>
 
-  <!-- STATUS -->
+  <!-- STATUS LABEL -->
+  <div class="statusLabel">NARROWS HIKE STATUS</div>
+
+  <!-- STATUS BLOCK -->
   <div id="status" class="statusBlock">LOADING</div>
 
   <div id="gear" class="gear"></div>
@@ -231,11 +239,10 @@ async function load() {
   const tempF = tempC * 9/5 + 32;
 
   document.getElementById("flow").innerText = cfs.toFixed(0);
-
   document.getElementById("temp").innerText =
     `${tempF.toFixed(0)}°F / ${tempC.toFixed(0)}°C`;
 
-  // TREND NOW INSIDE CFS CARD
+  // TREND
   let trend = "→ steady";
   if (lastCFS !== null) {
     const diff = cfs - lastCFS;
@@ -275,7 +282,7 @@ async function load() {
 
   document.getElementById("gear").innerText = gear;
 
-  // WEATHER (F + C RESTORED)
+  // WEATHER
   const wx = await fetch(
     "https://api.open-meteo.com/v1/forecast?latitude=37.2&longitude=-113.0&daily=precipitation_sum,temperature_2m_max,temperature_2m_min&timezone=auto"
   ).then(r => r.json());
@@ -299,11 +306,8 @@ async function load() {
       <div class="dayCard">
         <div class="dayName">${labels[i]}</div>
         <div>${wx.daily.precipitation_sum[i]} in</div>
-
-        <!-- BOTH UNITS RESTORED -->
         <div>H ${hiF.toFixed(0)}°F / ${wx.daily.temperature_2m_max[i].toFixed(0)}°C</div>
         <div>L ${loF.toFixed(0)}°F / ${wx.daily.temperature_2m_min[i].toFixed(0)}°C</div>
-
         <div class="bubble ${risk(wx.daily.precipitation_sum[i])}">
           ${risk(wx.daily.precipitation_sum[i]).toUpperCase()}
         </div>
