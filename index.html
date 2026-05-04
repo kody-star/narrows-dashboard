@@ -25,34 +25,36 @@
       gap: 18px;
     }
 
+    /* 🔥 BIGGER MAIN TITLE */
     .title {
       text-align: center;
-      font-size: 30px;
+      font-size: 44px;
       font-family: "Paytone One", sans-serif;
       letter-spacing: 3px;
     }
 
-    /* METRICS */
+    /* METRICS - FIXED EQUAL SPACING */
     .metrics {
       display: flex;
-      justify-content: center;
-      gap: 30px;
+      justify-content: space-between; /* FIXED: even spacing */
+      align-items: stretch;
+      gap: 24px;
     }
 
     .card {
       flex: 1;
-      max-width: 420px;
+      max-width: none; /* FIXED: removes uneven shrink */
       background: white;
       border-radius: 18px;
       padding: 18px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.08);
       border: 1px solid #e5e7eb;
-      text-align: center;
 
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
+      text-align: center;
     }
 
     .bigNumber {
@@ -65,7 +67,6 @@
       font-size: 75px;
       font-weight: 900;
       line-height: 1;
-      text-align: center;
     }
 
     .label {
@@ -90,14 +91,13 @@
       font-weight: 800;
       letter-spacing: 2px;
       opacity: 0.7;
-      margin-bottom: -8px;
+      margin-bottom: -6px;
     }
 
-    /* STATUS CARD = SAME SIZE AS METRICS */
+    /* STATUS CARD - MATCH HEIGHT + FIX GAP */
     .statusBlock {
-      width: 420px;
-      height: 180px;
-      margin: 0 auto;
+      width: 100%;
+      max-width: none;
 
       background: white;
       border-radius: 18px;
@@ -113,6 +113,8 @@
       font-weight: 900;
       color: white;
       text-align: center;
+
+      margin: 0; /* FIXED GAP ISSUE */
     }
 
     .gear {
@@ -123,7 +125,6 @@
       opacity: 0.9;
     }
 
-    /* FORECAST */
     .forecastTitle {
       text-align: center;
       font-size: 20px;
@@ -179,6 +180,7 @@
 
 <div class="wrap">
 
+  <!-- TITLE -->
   <div class="title">ZION NARROWS CURRENT CONDITIONS</div>
 
   <!-- METRICS -->
@@ -197,12 +199,11 @@
 
   </div>
 
-  <!-- STATUS LABEL -->
+  <!-- STATUS -->
   <div class="statusLabel">NARROWS HIKE STATUS</div>
-
-  <!-- STATUS BLOCK -->
   <div id="status" class="statusBlock">LOADING</div>
 
+  <!-- GEAR -->
   <div id="gear" class="gear"></div>
 
   <!-- FORECAST -->
@@ -272,13 +273,18 @@ async function load() {
   statusEl.innerText = status;
   statusEl.style.background = color;
 
-  // GEAR
+  // GEAR LABEL FIX
   let gear = "";
 
-  if (tempF > 65 && cfs < 150) gear = "Footwear Package Recommended";
-  else if (tempF < 65 && cfs < 100) gear = "Dry Bib Package Recommended";
-  else if (tempF < 65 && cfs > 100) gear = "Dry Suit Package Recommended";
-  else gear = "Standard Canyon Gear";
+  if (tempF > 65 && cfs < 150) {
+    gear = "Recommended package for current conditions: Footwear Package";
+  } else if (tempF < 65 && cfs < 100) {
+    gear = "Recommended package for current conditions: Dry Bib Package";
+  } else if (tempF < 65 && cfs > 100) {
+    gear = "Recommended package for current conditions: Dry Suit Package";
+  } else {
+    gear = "Recommended package for current conditions: Standard Canyon Gear";
+  }
 
   document.getElementById("gear").innerText = gear;
 
