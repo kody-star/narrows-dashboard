@@ -8,8 +8,8 @@
   <style>
     body {
       margin: 0;
-      background: #070b14;
-      color: white;
+      background: #f6f8fb;
+      color: #111827;
       font-family: Arial, sans-serif;
     }
 
@@ -18,8 +18,6 @@
       height: 100vh;
       padding: 50px;
       box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
     }
 
     .title {
@@ -27,44 +25,70 @@
       font-size: 26px;
       letter-spacing: 3px;
       opacity: 0.85;
+      color: #111827;
     }
 
     .flow {
       text-align: center;
-      font-size: 150px;
+      font-size: 140px;
       font-weight: 900;
-      margin-top: 10px;
-      line-height: 1;
+      margin-top: 20px;
     }
 
-    .trend {
+    .barWrap {
+      width: 60%;
+      margin: 0 auto;
+      height: 18px;
+      background: #e5e7eb;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .bar {
+      height: 100%;
+      width: 0%;
+      background: #16a34a;
+      transition: width 0.5s ease;
+    }
+
+    .temp {
       text-align: center;
-      font-size: 32px;
-      margin-top: 5px;
+      font-size: 28px;
+      margin-top: 10px;
       opacity: 0.9;
     }
 
     .status {
       margin: 25px auto;
-      padding: 18px 28px;
-      border-radius: 14px;
-      font-size: 44px;
+      padding: 18px 30px;
+      border-radius: 16px;
+      font-size: 42px;
       font-weight: 900;
-      display: inline-block;
-    }
-
-    .mid {
       text-align: center;
-      font-size: 24px;
-      margin-top: 10px;
-      line-height: 1.6;
-      opacity: 0.95;
+      display: inline-block;
+      color: white;
     }
 
     .gear {
       text-align: center;
       font-size: 26px;
       margin-top: 10px;
+    }
+
+    .forecast-title {
+      text-align: center;
+      margin-top: 50px;
+      font-size: 20px;
+      letter-spacing: 2px;
+      opacity: 0.8;
+    }
+
+    .forecast {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 26px;
+      line-height: 1.8;
       font-weight: 700;
     }
 
@@ -74,28 +98,6 @@
       opacity: 0.6;
       margin-top: 10px;
     }
-
-    .forecast-title {
-      text-align: center;
-      margin-top: 45px;
-      font-size: 20px;
-      letter-spacing: 2px;
-      opacity: 0.75;
-    }
-
-    .forecast {
-      width: 100%;
-      max-width: 900px;
-      align-self: center;
-      margin-top: 20px;
-      font-size: 26px;
-      font-weight: 700;
-      line-height: 1.8;
-    }
-
-    .low { color: #16a34a; }
-    .med { color: #f59e0b; }
-    .high { color: #dc2626; }
   </style>
 </head>
 
@@ -107,21 +109,24 @@
 
   <div id="flow" class="flow">--</div>
 
-  <div id="trend" class="trend">--</div>
+  <!-- VISUAL RIVER BAR -->
+  <div class="barWrap">
+    <div id="bar" class="bar"></div>
+  </div>
+
+  <div id="temp" class="temp">Loading river data...</div>
 
   <div style="text-align:center;">
     <div id="status" class="status">LOADING</div>
   </div>
 
-  <div id="mid" class="mid">Loading conditions...</div>
-
   <div id="gear" class="gear"></div>
 
-  <div id="updated" class="updated"></div>
-
-  <div class="forecast-title">5-DAY RISK FORECAST</div>
+  <div class="forecast-title">5-DAY SPRINGDALE PRECIPITATION FORECAST</div>
 
   <div id="forecast" class="forecast"></div>
+
+  <div id="updated" class="updated"></div>
 
 </div>
 
@@ -130,7 +135,6 @@ async function load() {
 
   try {
 
-    // ---------------- USGS RIVER ----------------
     const river = await fetch(
       "https://waterservices.usgs.gov/nwis/iv/?format=json&sites=09405500&parameterCd=00060,00010"
     ).then(r => r.json());
@@ -150,12 +154,7 @@ async function load() {
 
     const tempF = tempC ? (tempC * 9/5 + 32) : null;
 
-    // ---------------- SIMPLE TREND ----------------
-    let trend = "→ stable";
-    if (cfs > 140) trend = "↗ rising";
-    if (cfs < 110) trend = "↘ falling";
-
-    // ---------------- STATUS (STRICT MODE) ----------------
+    // ---------------- STATUS ----------------
     let status = "";
     let color = "";
 
@@ -166,38 +165,38 @@ async function load() {
       status = "TOP-DOWN CLOSED";
       color = "#f59e0b";
     } else {
-      status = "OPEN — SAFE TO ENTER";
+      status = "OPEN";
       color = "#16a34a";
     }
+
+    // ---------------- BAR GRAPHIC ----------------
+    let barPct = Math.min((cfs / 200) * 100, 100);
+
+    document.getElementById("bar").style.width = barPct + "%";
+    document.getElementById("bar").style.background = color;
 
     // ---------------- GEAR ----------------
     let gear = "";
 
     if (tempF && cfs > 100 && tempF < 65) {
-      gear = "Gear: DRY SUIT PACKAGE";
+      gear = "Recommended: Dry Suit Package";
     } else if (tempF && cfs < 100 && tempF < 65) {
-      gear = "Gear: DRY BIB PACKAGE";
+      gear = "Recommended: Dry Bib Package";
     } else if (tempF && cfs < 150 && tempF > 65) {
-      gear = "Gear: FOOTWEAR PACKAGE";
+      gear = "Recommended: Footwear Package";
     } else {
-      gear = "Gear: STANDARD CANYON FOOTWEAR";
+      gear = "Recommended: Standard Canyon Footwear";
     }
 
-    // ---------------- RENDER CORE ----------------
     document.getElementById("flow").innerText = cfs + " CFS";
-    document.getElementById("trend").innerText = trend;
+    document.getElementById("temp").innerText =
+      "Water Temp: " + (tempF ? tempF.toFixed(1) + "°F" : "N/A");
 
     const statusEl = document.getElementById("status");
     statusEl.innerText = status;
     statusEl.style.background = color;
 
-    document.getElementById("mid").innerHTML =
-      `Water Temp: ${tempF.toFixed(1)}°F<br>Recent Rain: LOW`;
-
     document.getElementById("gear").innerText = gear;
-
-    document.getElementById("updated").innerText =
-      "Last Updated: " + new Date().toLocaleTimeString();
 
     // ---------------- WEATHER ----------------
     const wx = await fetch(
@@ -205,23 +204,18 @@ async function load() {
     ).then(r => r.json());
 
     const p = wx?.daily?.precipitation_sum || [];
-
-    const mapRisk = (val) => {
-      if (val < 0.25) return "low";
-      if (val < 0.75) return "med";
-      return "high";
-    };
-
-    const labels = ["Mon","Tue","Wed","Thu","Fri"];
+    const days = ["Mon","Tue","Wed","Thu","Fri"];
 
     let html = "";
 
     for (let i = 0; i < 5; i++) {
-      const risk = mapRisk(p[i] ?? 0);
-      html += `<div><span class="${risk}">${labels[i]} — ${risk.toUpperCase()}</span></div>`;
+      html += `${days[i]} — ${p[i] ?? 0} in<br>`;
     }
 
     document.getElementById("forecast").innerHTML = html;
+
+    document.getElementById("updated").innerText =
+      "Last Updated: " + new Date().toLocaleString();
 
   } catch (e) {
     console.log(e);
