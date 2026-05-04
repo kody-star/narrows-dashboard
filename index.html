@@ -36,13 +36,11 @@
     .metrics {
       display: flex;
       justify-content: space-between;
-      align-items: stretch;
       gap: 24px;
     }
 
     .card {
       flex: 1;
-      max-width: none;
       background: white;
       border-radius: 18px;
       padding: 18px;
@@ -83,7 +81,6 @@
       opacity: 0.85;
     }
 
-    /* STATUS LABEL */
     .statusLabel {
       text-align: center;
       font-size: 16px;
@@ -93,12 +90,11 @@
       margin-bottom: -6px;
     }
 
-    /* 🔻 REDUCED STATUS BLOCK */
     .statusBlock {
       width: 100%;
       background: white;
       border-radius: 18px;
-      padding: 14px; /* reduced */
+      padding: 14px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.08);
       border: 1px solid #e5e7eb;
 
@@ -106,11 +102,9 @@
       align-items: center;
       justify-content: center;
 
-      font-size: 34px; /* reduced */
+      font-size: 34px;
       font-weight: 900;
       color: white;
-      text-align: center;
-
       margin: 0;
     }
 
@@ -131,7 +125,6 @@
       opacity: 0.85;
     }
 
-    /* 🔵 BIGGER FORECAST CARDS */
     .forecast {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
@@ -141,15 +134,35 @@
     .dayCard {
       background: #f8fafc;
       border-radius: 16px;
-      padding: 18px; /* increased */
+      padding: 18px;
       text-align: center;
       border: 1px solid #e5e7eb;
+      position: relative;
+    }
+
+    .today {
+      border: 2px solid #2563eb;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+      background: #eff6ff;
+    }
+
+    .todayTag {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: #2563eb;
+      color: white;
+      font-size: 10px;
+      font-weight: 900;
+      padding: 4px 8px;
+      border-radius: 999px;
+      letter-spacing: 1px;
     }
 
     .dayName {
       font-weight: 900;
       margin-bottom: 10px;
-      font-size: 18px;
+      font-size: 16px;
     }
 
     .dayCard div {
@@ -260,16 +273,9 @@ async function load() {
   let status = "";
   let color = "";
 
-  if (cfs > 150) {
-    status = "CLOSED";
-    color = "#ef4444";
-  } else if (cfs > 120) {
-    status = "TOP-DOWN CLOSED";
-    color = "#f59e0b";
-  } else {
-    status = "OPEN";
-    color = "#16a34a";
-  }
+  if (cfs > 150) status = "CLOSED", color = "#ef4444";
+  else if (cfs > 120) status = "TOP-DOWN CLOSED", color = "#f59e0b";
+  else status = "OPEN", color = "#16a34a";
 
   const statusEl = document.getElementById("status");
   statusEl.innerText = status;
@@ -290,12 +296,21 @@ async function load() {
 
   document.getElementById("gear").innerText = gear;
 
-  // WEATHER
+  // 🌤 FULLY DYNAMIC MM-DD ONLY (NO WEEKDAYS)
+  const labels = [];
+  for (let i = 0; i < 5; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() + i);
+
+    const m = d.getMonth() + 1;
+    const day = d.getDate();
+
+    labels.push(`${m}-${day}`);
+  }
+
   const wx = await fetch(
     "https://api.open-meteo.com/v1/forecast?latitude=37.2&longitude=-113.0&daily=precipitation_sum,temperature_2m_max,temperature_2m_min&timezone=auto"
   ).then(r => r.json());
-
-  const labels = ["Mon","Tue","Wed","Thu","Fri"];
 
   function risk(v){
     if (v < 0.25) return "low";
@@ -311,7 +326,8 @@ async function load() {
     const loF = wx.daily.temperature_2m_min[i] * 9/5 + 32;
 
     html += `
-      <div class="dayCard">
+      <div class="dayCard ${i === 0 ? "today" : ""}">
+        ${i === 0 ? `<div class="todayTag">TODAY</div>` : ""}
         <div class="dayName">${labels[i]}</div>
         <div>${wx.daily.precipitation_sum[i]} in</div>
         <div>H ${hiF.toFixed(0)}°F / ${wx.daily.temperature_2m_max[i].toFixed(0)}°C</div>
