@@ -87,15 +87,17 @@
     }
 
     /* STATUS (SMALLER AS REQUESTED) */
-    .statusBlock {
-      text-align: center;
-      border-radius: 18px;
-      padding: 10px 16px;   /* reduced */
-      color: white;
-      font-size: 34px;     /* reduced */
-      font-weight: 900;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.12);
-    }
+   .statusBlock {
+  text-align: center;
+  border-radius: 18px;
+  padding: 8px 14px;   /* smaller */
+  color: white;
+  font-size: 26px;     /* reduced from 34px */
+  font-weight: 900;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+  width: fit-content;  /* prevents full-width dominance */
+  margin: 0 auto;      /* keeps it centered */
+}
 
     .gear {
       text-align: center;
