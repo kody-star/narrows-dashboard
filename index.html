@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Zion Narrows Dashboard</title>
+
+  <style>
+    body {
+      margin: 0;
+      background: #0b1220;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+
+    .wrap {
+      width: 100vw;
+      height: 100vh;
+      padding: 50px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+
+    .title {
+      text-align: center;
+      font-size: 28px;
+      letter-spacing: 3px;
+      opacity: 0.8;
+    }
+
+    .flow {
+      text-align: center;
+      font-size: 140px;
+      font-weight: 900;
+      margin-top: 20px;
+    }
+
+    .temp {
+      text-align: center;
+      font-size: 32px;
+      margin-top: 10px;
+      opacity: 0.9;
+    }
+
+    .status {
+      margin: 20px auto;
+      padding: 18px 30px;
+      border-radius: 16px;
+      font-size: 44px;
+      font-weight: 900;
+      text-align: center;
+      display: inline-block;
+    }
+
+    .gear {
+      text-align: center;
+      font-size: 28px;
+      margin-top: 10px;
+      opacity: 0.95;
+    }
+
+    .forecast-title {
+      text-align: center;
+      margin-top: 50px;
+      font-size: 22px;
+      letter-spacing: 2px;
+      opacity: 0.8;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+      margin-top: 25px;
+      width: 100%;
+      max-width: 1200px;
+      align-self: center;
+    }
+
+    .card {
+      border-radius: 16px;
+      padding: 16px;
+      text-align: center;
+      font-weight: 900;
+      color: #0b0f1a;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.35);
+      border: 2px solid rgba(255,255,255,0.25);
+    }
+
+    .small {
+      font-size: 14px;
+      margin-top: 6px;
+      opacity: 0.9;
+    }
+  </style>
+</head>
+
+<body>
+<div class="wrap">
+
+  <div class="title">ZION NARROWS OPERATIONS BOARD</div>
+
+  <div id="flow" class="flow">--</div>
+
+  <div id="temp" class="temp">Loading river data...</div>
+
+  <div style="text-align:center;">
+    <div id="status" class="status">LOADING</div>
+  </div>
+
+  <div id="gear" class="gear"></div>
+
+  <div class="forecast-title">
+    5-DAY SPRINGDALE PRECIPITATION FORECAST
+  </div>
+
+  <div id="forecast" class="grid"></div>
+
+</div>
+
+<script>
+async function load() {
+
+  try {
+
+    // ---------------- RIVER ----------------
+    const river = await fetch(
+      "https://waterservices.usgs.gov/nwis/iv/?format=json&sites=09405500&parameterCd=00060,00010"
+    ).then(r => r.json());
+
+    const series = river?.value?.timeSeries || [];
+
+    let cfs = null;
+    let tempC = null;
+
+    series.forEach(s => {
+      const code = s?.variable?.variableCode?.[0]?.value;
+      const val = s?.values?.[0]?.value?.[0]?.value;
+
+      if (code === "00060") cfs = Number(val);
+      if (code === "00010") tempC = Number(val);
+    });
+
+    const tempF = tempC ? (tempC * 9/5 + 32) : null;
+
+    // ---------------- STATUS ----------------
+    let status = "";
+    let color = "";
+
+    if (cfs > 150) {
+      status = "CLOSED";
+      color = "#ef4444";
+    } else if (cfs > 120) {
+      status = "TOP-DOWN CLOSED • BOTTOM-UP OPEN";
+      color = "#f59e0b";
+    } else {
+      status = "OPEN";
+      color = "#22c55e";
+    }
+
+    // ---------------- GEAR ----------------
+    let gear = "";
+
+    if (tempF && cfs > 100 && tempF < 65) {
+      gear = "Dry Suit Package Recommended";
+    } else if (tempF && cfs < 100 && tempF < 65) {
+      gear = "Dry Bib Package Recommended";
+    } else if (tempF && cfs < 150 && tempF > 65) {
+      gear = "Footwear Package Recommended";
+    } else {
+      gear = "Standard Canyon Footwear Recommended";
+    }
+
+    document.getElementById("flow").innerText = cfs + " CFS";
+    document.getElementById("temp").innerText =
+      "Water Temp: " + (tempF ? tempF.toFixed(1) + "°F" : "N/A");
+
+    const statusEl = document.getElementById("status");
+    statusEl.innerText = status;
+    statusEl.style.background = color;
+
+    document.getElementById("gear").innerText = gear;
+
+    // ---------------- WEATHER ----------------
+    const wx = await fetch(
+      "https://api.open-meteo.com/v1/forecast?latitude=37.2&longitude=-113.0&daily=precipitation_sum,temperature_2m_max,temperature_2m_min&timezone=auto"
+    ).then(r => r.json());
+
+    const days = wx?.daily?.time || [];
+    const precip = wx?.daily?.precipitation_sum || [];
+    const tMax = wx?.daily?.temperature_2m_max || [];
+    const tMin = wx?.daily?.temperature_2m_min || [];
+
+    let html = "";
+
+    for (let i = 0; i < 5; i++) {
+
+      const date = new Date(days[i]);
+      const label = date.toLocaleDateString(undefined, {
+        weekday: "short",
+        month: "short",
+        day: "numeric"
+      });
+
+      const rain = precip[i] ?? 0;
+
+      const hiF = (tMax[i] * 9/5 + 32);
+      const loF = (tMin[i] * 9/5 + 32);
+
+      let bg = "#22c55e";
+      if (rain > 0.25) bg = "#facc15";
+      if (rain > 0.75) bg = "#fb923c";
+      if (rain > 1.5) bg = "#ef4444";
+
+      html += `
+        <div class="card" style="background:${bg}">
+          <div>${label}</div>
+          <div style="font-size:26px;">${rain.toFixed(2)} in</div>
+          <div class="small">H: ${hiF.toFixed(0)}°F</div>
+          <div class="small">L: ${loF.toFixed(0)}°F</div>
+        </div>
+      `;
+    }
+
+    document.getElementById("forecast").innerHTML = html;
+
+  } catch (e) {
+    console.log(e);
+    document.getElementById("status").innerText = "DATA ERROR";
+    document.getElementById("status").style.background = "#6b7280";
+  }
+}
+
+load();
+setInterval(load, 60000);
+</script>
+
+</body>
+</html>
