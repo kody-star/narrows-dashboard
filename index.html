@@ -25,38 +25,31 @@
       font-size: 26px;
       letter-spacing: 3px;
       opacity: 0.85;
-      color: #111827;
     }
 
-    .flow {
+    /* NEW TOP ROW (CFS + TEMP) */
+    .topRow {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 80px;
+      margin-top: 30px;
+    }
+
+    .bigStat {
       text-align: center;
-      font-size: 140px;
+    }
+
+    .bigNumber {
+      font-size: 110px;
       font-weight: 900;
-      margin-top: 20px;
+      line-height: 1;
     }
 
-    .barWrap {
-      width: 60%;
-      margin: 0 auto;
-      height: 18px;
-      background: #e5e7eb;
-      border-radius: 999px;
-      overflow: hidden;
-      margin-top: 10px;
-    }
-
-    .bar {
-      height: 100%;
-      width: 0%;
-      background: #16a34a;
-      transition: width 0.5s ease;
-    }
-
-    .temp {
-      text-align: center;
-      font-size: 28px;
-      margin-top: 10px;
-      opacity: 0.9;
+    .label {
+      font-size: 20px;
+      opacity: 0.7;
+      margin-top: 5px;
     }
 
     .status {
@@ -76,7 +69,8 @@
       margin-top: 10px;
     }
 
-    .forecast-title {
+    /* FORECAST */
+    .forecastTitle {
       text-align: center;
       margin-top: 50px;
       font-size: 20px;
@@ -85,11 +79,16 @@
     }
 
     .forecast {
-      text-align: center;
-      margin-top: 20px;
-      font-size: 26px;
+      max-width: 900px;
+      margin: 20px auto;
+      font-size: 22px;
       line-height: 1.8;
-      font-weight: 700;
+      font-weight: 600;
+    }
+
+    .day {
+      padding: 8px 0;
+      border-bottom: 1px solid #e5e7eb;
     }
 
     .updated {
@@ -107,14 +106,20 @@
 
   <div class="title">ZION NARROWS CURRENT CONDITIONS</div>
 
-  <div id="flow" class="flow">--</div>
+  <!-- TOP ROW -->
+  <div class="topRow">
 
-  <!-- VISUAL RIVER BAR -->
-  <div class="barWrap">
-    <div id="bar" class="bar"></div>
+    <div class="bigStat">
+      <div id="flow" class="bigNumber">--</div>
+      <div class="label">CFS</div>
+    </div>
+
+    <div class="bigStat">
+      <div id="temp" class="bigNumber">--</div>
+      <div class="label">°F WATER</div>
+    </div>
+
   </div>
-
-  <div id="temp" class="temp">Loading river data...</div>
 
   <div style="text-align:center;">
     <div id="status" class="status">LOADING</div>
@@ -122,7 +127,7 @@
 
   <div id="gear" class="gear"></div>
 
-  <div class="forecast-title">5-DAY SPRINGDALE PRECIPITATION FORECAST</div>
+  <div class="forecastTitle">5-DAY SPRINGDALE FORECAST</div>
 
   <div id="forecast" class="forecast"></div>
 
@@ -135,6 +140,7 @@ async function load() {
 
   try {
 
+    // ---------------- RIVER ----------------
     const river = await fetch(
       "https://waterservices.usgs.gov/nwis/iv/?format=json&sites=09405500&parameterCd=00060,00010"
     ).then(r => r.json());
@@ -160,7 +166,7 @@ async function load() {
 
     if (cfs > 150) {
       status = "CLOSED";
-      color = "#dc2626";
+      color = "#ef4444";
     } else if (cfs > 120) {
       status = "TOP-DOWN CLOSED";
       color = "#f59e0b";
@@ -169,11 +175,12 @@ async function load() {
       color = "#16a34a";
     }
 
-    // ---------------- BAR GRAPHIC ----------------
-    let barPct = Math.min((cfs / 200) * 100, 100);
+    document.getElementById("flow").innerText = cfs.toFixed(0);
+    document.getElementById("temp").innerText = tempF.toFixed(0);
 
-    document.getElementById("bar").style.width = barPct + "%";
-    document.getElementById("bar").style.background = color;
+    const statusEl = document.getElementById("status");
+    statusEl.innerText = status;
+    statusEl.style.background = color;
 
     // ---------------- GEAR ----------------
     let gear = "";
@@ -188,28 +195,35 @@ async function load() {
       gear = "Recommended: Standard Canyon Footwear";
     }
 
-    document.getElementById("flow").innerText = cfs + " CFS";
-    document.getElementById("temp").innerText =
-      "Water Temp: " + (tempF ? tempF.toFixed(1) + "°F" : "N/A");
-
-    const statusEl = document.getElementById("status");
-    statusEl.innerText = status;
-    statusEl.style.background = color;
-
     document.getElementById("gear").innerText = gear;
 
-    // ---------------- WEATHER ----------------
+    // ---------------- WEATHER (FULL FORECAST) ----------------
     const wx = await fetch(
-      "https://api.open-meteo.com/v1/forecast?latitude=37.2&longitude=-113.0&daily=precipitation_sum&timezone=auto"
+      "https://api.open-meteo.com/v1/forecast?latitude=37.2&longitude=-113.0&daily=precipitation_sum,temperature_2m_max,temperature_2m_min&timezone=auto"
     ).then(r => r.json());
 
-    const p = wx?.daily?.precipitation_sum || [];
-    const days = ["Mon","Tue","Wed","Thu","Fri"];
+    const days = wx.daily.time;
+    const precip = wx.daily.precipitation_sum;
+    const tMax = wx.daily.temperature_2m_max;
+    const tMin = wx.daily.temperature_2m_min;
 
     let html = "";
 
     for (let i = 0; i < 5; i++) {
-      html += `${days[i]} — ${p[i] ?? 0} in<br>`;
+
+      const hiF = (tMax[i] * 9/5 + 32);
+      const loF = (tMin[i] * 9/5 + 32);
+
+      const hiC = tMax[i];
+      const loC = tMin[i];
+
+      html += `
+        <div class="day">
+          ${days[i]} — ${precip[i]} in |
+          H: ${hiF.toFixed(0)}°F / ${hiC.toFixed(0)}°C |
+          L: ${loF.toFixed(0)}°F / ${loC.toFixed(0)}°C
+        </div>
+      `;
     }
 
     document.getElementById("forecast").innerHTML = html;
