@@ -15,36 +15,29 @@
       font-family: "Century Gothic", CenturyGothic, Arial, sans-serif;
     }
 
-    /* FULL SCREEN GRID */
     .wrap {
       width: 100vw;
       height: 100vh;
-      display: grid;
-      grid-template-columns: 2.2fr 1fr;
-      gap: 30px;
-      padding: 40px;
+      padding: 3vh 5vw;
       box-sizing: border-box;
-    }
-
-    /* LEFT MAIN PANEL */
-    .main {
       display: flex;
       flex-direction: column;
     }
 
     .title {
       text-align: center;
-      font-size: 28px;
+      font-size: 30px;
       font-family: "Paytone One", sans-serif;
       letter-spacing: 3px;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
     }
 
+    /* TOP METRICS ROW */
     .topRow {
       display: flex;
       justify-content: center;
-      gap: 120px;
-      align-items: center;
+      align-items: flex-end;
+      gap: 140px;
       margin-top: 10px;
     }
 
@@ -53,49 +46,88 @@
     }
 
     .bigNumber {
-      font-size: 120px;
+      font-size: 140px;
       font-weight: 900;
       line-height: 1;
     }
 
+    /* WATER TEMP SMALLER (~1/3 down) */
     .tempNumber {
-      font-size: 80px;
+      font-size: 90px;
       font-weight: 900;
       line-height: 1;
     }
 
+    /* 🔥 STRONGER LABEL HIERARCHY */
     .label {
-      font-size: 16px;
-      opacity: 0.6;
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      opacity: 0.85;
+      margin-top: 6px;
     }
 
+    .label.secondary {
+      font-size: 18px;
+      font-weight: 700;
+      opacity: 0.65;
+      letter-spacing: 1px;
+    }
+
+    .trend {
+      text-align: center;
+      font-size: 26px;
+      font-weight: 800;
+      margin-top: 10px;
+    }
+
+    .status {
+      margin: 15px auto;
+      padding: 14px 28px;
+      border-radius: 16px;
+      font-size: 42px;
+      font-weight: 900;
+      color: white;
+      text-align: center;
+    }
+
+    .gear {
+      text-align: center;
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    /* FORECAST BLOCK */
     .forecastTitle {
       text-align: center;
-      margin-top: 30px;
-      font-size: 18px;
+      font-size: 20px;
       font-family: "Paytone One", sans-serif;
       letter-spacing: 2px;
-      opacity: 0.8;
+      margin-top: 10px;
+      opacity: 0.85;
     }
 
     .forecast {
-      margin-top: 20px;
-      font-size: 18px;
+      margin-top: 10px;
+      font-size: 20px;
       font-weight: 600;
+      flex: 1;
+      overflow-y: auto;
     }
 
     .day {
       display: flex;
       justify-content: space-between;
-      padding: 10px 0;
+      padding: 12px 0;
       border-bottom: 1px solid #e5e7eb;
     }
 
     .bubble {
       padding: 6px 14px;
       border-radius: 999px;
-      font-size: 12px;
-      font-weight: 700;
+      font-size: 13px;
+      font-weight: 800;
       color: white;
     }
 
@@ -105,48 +137,9 @@
 
     .updated {
       text-align: center;
-      font-size: 12px;
+      font-size: 13px;
       opacity: 0.6;
-      margin-top: 10px;
-    }
-
-    /* RIGHT SIDEBAR */
-    .side {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 25px;
-      padding-left: 10px;
-      border-left: 1px solid #e5e7eb;
-    }
-
-    .status {
-      padding: 20px;
-      border-radius: 16px;
-      font-size: 34px;
-      font-weight: 900;
-      text-align: center;
-      color: white;
-    }
-
-    .trend {
-      text-align: center;
-      font-size: 22px;
-      font-weight: 700;
-    }
-
-    .gear {
-      text-align: center;
-      font-size: 20px;
-      font-weight: 600;
-      line-height: 1.4;
-    }
-
-    .sideLabel {
-      text-align: center;
-      font-size: 14px;
-      opacity: 0.6;
-      margin-top: -10px;
+      margin-top: 8px;
     }
   </style>
 </head>
@@ -155,46 +148,34 @@
 
 <div class="wrap">
 
-  <!-- LEFT MAIN -->
-  <div class="main">
+  <div class="title">ZION NARROWS CURRENT CONDITIONS</div>
 
-    <div class="title">ZION NARROWS CURRENT CONDITIONS</div>
+  <!-- TOP METRICS -->
+  <div class="topRow">
 
-    <div class="topRow">
-
-      <div class="bigStat">
-        <div id="flow" class="bigNumber">--</div>
-        <div class="label">CFS</div>
-      </div>
-
-      <div class="bigStat">
-        <div id="temp" class="tempNumber">--</div>
-        <div class="label">WATER TEMP</div>
-      </div>
-
+    <div class="bigStat">
+      <div id="flow" class="bigNumber">--</div>
+      <div class="label">CFS</div>
     </div>
 
-    <div class="forecastTitle">5-DAY ZION FORECAST</div>
-
-    <div id="forecast" class="forecast"></div>
-
-    <div id="updated" class="updated"></div>
-
-  </div>
-
-  <!-- RIGHT SIDEBAR -->
-  <div class="side">
-
-    <div id="status" class="status">LOADING</div>
-    <div class="sideLabel">CONDITION STATUS</div>
-
-    <div id="trend" class="trend">--</div>
-    <div class="sideLabel">FLOW TREND</div>
-
-    <div id="gear" class="gear"></div>
-    <div class="sideLabel">GEAR RECOMMENDATION</div>
+    <div class="bigStat">
+      <div id="temp" class="tempNumber">--</div>
+      <div class="label secondary">WATER TEMP</div>
+    </div>
 
   </div>
+
+  <div id="trend" class="trend">--</div>
+
+  <div id="status" class="status">LOADING</div>
+
+  <div id="gear" class="gear"></div>
+
+  <div class="forecastTitle">5-DAY ZION FORECAST</div>
+
+  <div id="forecast" class="forecast"></div>
+
+  <div id="updated" class="updated"></div>
 
 </div>
 
@@ -203,118 +184,109 @@ let lastCFS = null;
 
 async function load() {
 
-  try {
+  const river = await fetch(
+    "https://waterservices.usgs.gov/nwis/iv/?format=json&sites=09405500&parameterCd=00060,00010"
+  ).then(r => r.json());
 
-    const river = await fetch(
-      "https://waterservices.usgs.gov/nwis/iv/?format=json&sites=09405500&parameterCd=00060,00010"
-    ).then(r => r.json());
+  const series = river?.value?.timeSeries || [];
 
-    const series = river?.value?.timeSeries || [];
+  let cfs = null;
+  let tempC = null;
 
-    let cfs = null;
-    let tempC = null;
+  series.forEach(s => {
+    const code = s?.variable?.variableCode?.[0]?.value;
+    const val = s?.values?.[0]?.value?.[0]?.value;
 
-    series.forEach(s => {
-      const code = s?.variable?.variableCode?.[0]?.value;
-      const val = s?.values?.[0]?.value?.[0]?.value;
+    if (code === "00060") cfs = Number(val);
+    if (code === "00010") tempC = Number(val);
+  });
 
-      if (code === "00060") cfs = Number(val);
-      if (code === "00010") tempC = Number(val);
-    });
+  const tempF = tempC ? (tempC * 9/5 + 32) : null;
 
-    const tempF = tempC ? (tempC * 9/5 + 32) : null;
-
-    document.getElementById("flow").innerText = cfs.toFixed(0);
-    document.getElementById("temp").innerText =
-      `${tempF.toFixed(0)}°F / ${tempC.toFixed(0)}°C`;
-
-    // TREND
-    let trend = "→ steady";
-    if (lastCFS !== null) {
-      const diff = cfs - lastCFS;
-      if (diff > 5) trend = "↗ rising";
-      else if (diff < -5) trend = "↘ falling";
-    }
-    lastCFS = cfs;
-
-    document.getElementById("trend").innerText = trend;
-
-    // STATUS
-    let status = "";
-    let color = "";
-
-    if (cfs > 150) {
-      status = "CLOSED";
-      color = "#ef4444";
-    } else if (cfs > 120) {
-      status = "TOP-DOWN CLOSED";
-      color = "#f59e0b";
-    } else {
-      status = "OPEN";
-      color = "#16a34a";
-    }
-
-    const statusEl = document.getElementById("status");
-    statusEl.innerText = status;
-    statusEl.style.background = color;
-
-    // GEAR
-    let gear = "";
-
-    if (tempF && cfs > 100 && tempF < 65) {
-      gear = "Dry Suit Package";
-    } else if (tempF && cfs < 100 && tempF < 65) {
-      gear = "Dry Bib Package";
-    } else if (tempF && cfs < 150 && tempF > 65) {
-      gear = "Footwear Package";
-    } else {
-      gear = "Standard Canyon Gear";
-    }
-
-    document.getElementById("gear").innerText = gear;
-
-    // FORECAST
-    const wx = await fetch(
-      "https://api.open-meteo.com/v1/forecast?latitude=37.2&longitude=-113.0&daily=precipitation_sum,temperature_2m_max,temperature_2m_min&timezone=auto"
-    ).then(r => r.json());
-
-    const labels = ["Mon","Tue","Wed","Thu","Fri"];
-
-    function risk(v){
-      if (v < 0.25) return "low";
-      if (v < 0.75) return "med";
-      return "high";
-    }
-
-    let html = "";
-
-    for (let i = 0; i < 5; i++) {
-
-      const hiF = (wx.daily.temperature_2m_max[i] * 9/5 + 32);
-      const loF = (wx.daily.temperature_2m_min[i] * 9/5 + 32);
-
-      html += `
-        <div class="day">
-          <div>
-            ${labels[i]} — ${wx.daily.precipitation_sum[i]} in |
-            H ${hiF.toFixed(0)}°F |
-            L ${loF.toFixed(0)}°F
-          </div>
-          <div class="bubble ${risk(wx.daily.precipitation_sum[i])}">
-            ${risk(wx.daily.precipitation_sum[i]).toUpperCase()}
-          </div>
-        </div>
-      `;
-    }
-
-    document.getElementById("forecast").innerHTML = html;
-
-    document.getElementById("updated").innerText =
-      "Last Updated: " + new Date().toLocaleString();
-
-  } catch (e) {
-    console.log(e);
+  // trend
+  let trend = "→ steady";
+  if (lastCFS !== null) {
+    const diff = cfs - lastCFS;
+    if (diff > 5) trend = "↗ rising";
+    else if (diff < -5) trend = "↘ falling";
   }
+  lastCFS = cfs;
+
+  document.getElementById("flow").innerText = cfs.toFixed(0);
+  document.getElementById("temp").innerText =
+    `${tempF.toFixed(0)}°F / ${tempC.toFixed(0)}°C`;
+
+  document.getElementById("trend").innerText = "Flow Trend: " + trend;
+
+  let status = "";
+  let color = "";
+
+  if (cfs > 150) {
+    status = "CLOSED";
+    color = "#ef4444";
+  } else if (cfs > 120) {
+    status = "TOP-DOWN CLOSED";
+    color = "#f59e0b";
+  } else {
+    status = "OPEN";
+    color = "#16a34a";
+  }
+
+  const statusEl = document.getElementById("status");
+  statusEl.innerText = status;
+  statusEl.style.background = color;
+
+  let gear = "";
+
+  if (tempF && cfs > 100 && tempF < 65) {
+    gear = "Dry Suit Package";
+  } else if (tempF && cfs < 100 && tempF < 65) {
+    gear = "Dry Bib Package";
+  } else if (tempF && cfs < 150 && tempF > 65) {
+    gear = "Footwear Package";
+  } else {
+    gear = "Standard Canyon Gear";
+  }
+
+  document.getElementById("gear").innerText = gear;
+
+  const wx = await fetch(
+    "https://api.open-meteo.com/v1/forecast?latitude=37.2&longitude=-113.0&daily=precipitation_sum,temperature_2m_max,temperature_2m_min&timezone=auto"
+  ).then(r => r.json());
+
+  const labels = ["Mon","Tue","Wed","Thu","Fri"];
+
+  function risk(v){
+    if (v < 0.25) return "low";
+    if (v < 0.75) return "med";
+    return "high";
+  }
+
+  let html = "";
+
+  for (let i = 0; i < 5; i++) {
+
+    const hiF = (wx.daily.temperature_2m_max[i] * 9/5 + 32);
+    const loF = (wx.daily.temperature_2m_min[i] * 9/5 + 32);
+
+    html += `
+      <div class="day">
+        <div>
+          ${labels[i]} — ${wx.daily.precipitation_sum[i]} in |
+          H ${hiF.toFixed(0)}°F |
+          L ${loF.toFixed(0)}°F
+        </div>
+        <div class="bubble ${risk(wx.daily.precipitation_sum[i])}">
+          ${risk(wx.daily.precipitation_sum[i]).toUpperCase()}
+        </div>
+      </div>
+    `;
+  }
+
+  document.getElementById("forecast").innerHTML = html;
+
+  document.getElementById("updated").innerText =
+    "Last Updated: " + new Date().toLocaleString();
 }
 
 load();
