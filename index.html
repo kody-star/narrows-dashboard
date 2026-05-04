@@ -25,7 +25,6 @@
       gap: 18px;
     }
 
-    /* 🔥 BIGGER MAIN TITLE */
     .title {
       text-align: center;
       font-size: 44px;
@@ -33,17 +32,17 @@
       letter-spacing: 3px;
     }
 
-    /* METRICS - FIXED EQUAL SPACING */
+    /* METRICS */
     .metrics {
       display: flex;
-      justify-content: space-between; /* FIXED: even spacing */
+      justify-content: space-between;
       align-items: stretch;
       gap: 24px;
     }
 
     .card {
       flex: 1;
-      max-width: none; /* FIXED: removes uneven shrink */
+      max-width: none;
       background: white;
       border-radius: 18px;
       padding: 18px;
@@ -94,14 +93,12 @@
       margin-bottom: -6px;
     }
 
-    /* STATUS CARD - MATCH HEIGHT + FIX GAP */
+    /* 🔻 REDUCED STATUS BLOCK */
     .statusBlock {
       width: 100%;
-      max-width: none;
-
       background: white;
       border-radius: 18px;
-      padding: 18px;
+      padding: 14px; /* reduced */
       box-shadow: 0 10px 25px rgba(0,0,0,0.08);
       border: 1px solid #e5e7eb;
 
@@ -109,12 +106,12 @@
       align-items: center;
       justify-content: center;
 
-      font-size: 42px;
+      font-size: 34px; /* reduced */
       font-weight: 900;
       color: white;
       text-align: center;
 
-      margin: 0; /* FIXED GAP ISSUE */
+      margin: 0;
     }
 
     .gear {
@@ -134,33 +131,40 @@
       opacity: 0.85;
     }
 
+    /* 🔵 BIGGER FORECAST CARDS */
     .forecast {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      gap: 12px;
+      gap: 16px;
     }
 
     .dayCard {
       background: #f8fafc;
-      border-radius: 14px;
-      padding: 12px;
+      border-radius: 16px;
+      padding: 18px; /* increased */
       text-align: center;
       border: 1px solid #e5e7eb;
     }
 
     .dayName {
       font-weight: 900;
-      margin-bottom: 6px;
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+
+    .dayCard div {
+      font-size: 16px;
+      line-height: 1.4;
     }
 
     .bubble {
       display: inline-block;
-      padding: 5px 10px;
+      padding: 6px 12px;
       border-radius: 999px;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 800;
       color: white;
-      margin-top: 6px;
+      margin-top: 10px;
     }
 
     .low { background: #16a34a; }
@@ -180,7 +184,6 @@
 
 <div class="wrap">
 
-  <!-- TITLE -->
   <div class="title">ZION NARROWS CURRENT CONDITIONS</div>
 
   <!-- METRICS -->
@@ -203,7 +206,6 @@
   <div class="statusLabel">NARROWS HIKE STATUS</div>
   <div id="status" class="statusBlock">LOADING</div>
 
-  <!-- GEAR -->
   <div id="gear" class="gear"></div>
 
   <!-- FORECAST -->
@@ -273,7 +275,7 @@ async function load() {
   statusEl.innerText = status;
   statusEl.style.background = color;
 
-  // GEAR LABEL FIX
+  // GEAR
   let gear = "";
 
   if (tempF > 65 && cfs < 150) {
