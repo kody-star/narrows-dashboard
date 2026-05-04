@@ -5,35 +5,45 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Zion Narrows Conditions</title>
 
+  <!-- GOOGLE FONT (TITLE ONLY) -->
+  <link href="https://fonts.googleapis.com/css2?family=Paytone+One&display=swap" rel="stylesheet">
+
   <style>
     body {
       margin: 0;
       background: #f6f8fb;
       color: #111827;
-      font-family: Arial, sans-serif;
+
+      /* GLOBAL FONT (Century Gothic fallback stack) */
+      font-family: "Century Gothic", CenturyGothic, AppleGothic, Arial, sans-serif;
     }
 
     .wrap {
       width: 100vw;
       height: 100vh;
-      padding: 50px;
+      padding: 4vh 6vw;
       box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
 
+    /* TITLE FONT = PAYTONE ONE */
     .title {
       text-align: center;
-      font-size: 26px;
+      font-size: clamp(22px, 2.2vw, 34px);
       letter-spacing: 3px;
       opacity: 0.85;
+      font-family: "Paytone One", sans-serif;
+      font-weight: 400;
     }
 
-    /* TOP METRICS */
     .topRow {
       display: flex;
       justify-content: center;
-      gap: 80px;
-      margin-top: 30px;
+      gap: 10vw;
       align-items: center;
+      margin-top: 2vh;
     }
 
     .bigStat {
@@ -41,28 +51,28 @@
     }
 
     .bigNumber {
-      font-size: 110px;
+      font-size: clamp(80px, 10vw, 150px);
       font-weight: 900;
       line-height: 1;
     }
 
     .label {
-      font-size: 18px;
+      font-size: clamp(14px, 1.5vw, 20px);
       opacity: 0.6;
     }
 
     .trend {
       text-align: center;
-      font-size: 28px;
+      font-size: clamp(18px, 2vw, 30px);
       margin-top: 10px;
       font-weight: 700;
     }
 
     .status {
-      margin: 25px auto;
-      padding: 18px 30px;
+      margin: 2vh auto;
+      padding: 1.5vh 2vw;
       border-radius: 16px;
-      font-size: 42px;
+      font-size: clamp(28px, 3vw, 48px);
       font-weight: 900;
       text-align: center;
       display: inline-block;
@@ -71,30 +81,30 @@
 
     .gear {
       text-align: center;
-      font-size: 26px;
-      margin-top: 10px;
+      font-size: clamp(18px, 2vw, 28px);
+      margin-top: 1vh;
     }
 
-    /* FORECAST */
     .forecastTitle {
       text-align: center;
-      margin-top: 50px;
-      font-size: 20px;
+      margin-top: 3vh;
+      font-size: clamp(16px, 1.8vw, 22px);
       letter-spacing: 2px;
       opacity: 0.8;
+      font-family: "Paytone One", sans-serif;
     }
 
     .forecast {
-      max-width: 900px;
-      margin: 20px auto;
-      font-size: 22px;
+      max-width: 1100px;
+      margin: 2vh auto;
+      font-size: clamp(16px, 1.6vw, 22px);
       font-weight: 600;
     }
 
     .day {
       display: flex;
       justify-content: space-between;
-      padding: 10px 0;
+      padding: 1vh 0;
       border-bottom: 1px solid #e5e7eb;
       align-items: center;
     }
@@ -126,7 +136,6 @@
 
   <div class="title">ZION NARROWS CURRENT CONDITIONS</div>
 
-  <!-- TOP ROW -->
   <div class="topRow">
 
     <div class="bigStat">
@@ -136,7 +145,7 @@
 
     <div class="bigStat">
       <div id="temp" class="bigNumber">--</div>
-      <div class="label">°F WATER</div>
+      <div class="label">WATER TEMP</div>
     </div>
 
   </div>
@@ -164,7 +173,6 @@ async function load() {
 
   try {
 
-    // ---------------- RIVER ----------------
     const river = await fetch(
       "https://waterservices.usgs.gov/nwis/iv/?format=json&sites=09405500&parameterCd=00060,00010"
     ).then(r => r.json());
@@ -184,20 +192,16 @@ async function load() {
 
     const tempF = tempC ? (tempC * 9/5 + 32) : null;
 
-    // ---------------- TREND ----------------
     let trend = "→ steady";
 
     if (lastCFS !== null) {
       const diff = cfs - lastCFS;
-
       if (diff > 5) trend = "↗ rising";
       else if (diff < -5) trend = "↘ falling";
-      else trend = "→ steady";
     }
 
     lastCFS = cfs;
 
-    // ---------------- STATUS ----------------
     let status = "";
     let color = "";
 
@@ -213,14 +217,15 @@ async function load() {
     }
 
     document.getElementById("flow").innerText = cfs.toFixed(0);
-    document.getElementById("temp").innerText = tempF.toFixed(0);
+    document.getElementById("temp").innerText =
+      `${tempF.toFixed(0)}°F / ${tempC.toFixed(0)}°C`;
+
     document.getElementById("trend").innerText = "Flow Trend: " + trend;
 
     const statusEl = document.getElementById("status");
     statusEl.innerText = status;
     statusEl.style.background = color;
 
-    // ---------------- GEAR ----------------
     let gear = "";
 
     if (tempF && cfs > 100 && tempF < 65) {
@@ -235,7 +240,6 @@ async function load() {
 
     document.getElementById("gear").innerText = gear;
 
-    // ---------------- WEATHER ----------------
     const wx = await fetch(
       "https://api.open-meteo.com/v1/forecast?latitude=37.2&longitude=-113.0&daily=precipitation_sum,temperature_2m_max,temperature_2m_min&timezone=auto"
     ).then(r => r.json());
@@ -247,9 +251,9 @@ async function load() {
 
     const labels = ["Mon","Tue","Wed","Thu","Fri"];
 
-    function risk(val) {
-      if (val < 0.25) return "low";
-      if (val < 0.75) return "med";
+    function risk(v){
+      if (v < 0.25) return "low";
+      if (v < 0.75) return "med";
       return "high";
     }
 
