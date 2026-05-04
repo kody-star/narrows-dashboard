@@ -12,33 +12,40 @@
       margin: 0;
       background: #f6f8fb;
       color: #111827;
-      font-family: "Century Gothic", CenturyGothic, AppleGothic, Arial, sans-serif;
+      font-family: "Century Gothic", CenturyGothic, Arial, sans-serif;
     }
 
+    /* FULL SCREEN GRID */
     .wrap {
       width: 100vw;
       height: 100vh;
-      padding: 4vh 6vw;
+      display: grid;
+      grid-template-columns: 2.2fr 1fr;
+      gap: 30px;
+      padding: 40px;
       box-sizing: border-box;
+    }
+
+    /* LEFT MAIN PANEL */
+    .main {
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
     }
 
     .title {
       text-align: center;
-      font-size: clamp(22px, 2.2vw, 34px);
-      letter-spacing: 3px;
-      opacity: 0.85;
+      font-size: 28px;
       font-family: "Paytone One", sans-serif;
+      letter-spacing: 3px;
+      margin-bottom: 20px;
     }
 
     .topRow {
       display: flex;
       justify-content: center;
-      gap: 10vw;
+      gap: 120px;
       align-items: center;
-      margin-top: 2vh;
+      margin-top: 10px;
     }
 
     .bigStat {
@@ -46,75 +53,48 @@
     }
 
     .bigNumber {
-      font-size: clamp(80px, 10vw, 150px);
+      font-size: 120px;
       font-weight: 900;
       line-height: 1;
     }
 
-    /* 🔥 WATER TEMP NOW ~1/3 SMALLER VISUALLY */
     .tempNumber {
-      font-size: clamp(50px, 6.5vw, 95px);
+      font-size: 80px;
       font-weight: 900;
       line-height: 1;
     }
 
     .label {
-      font-size: clamp(14px, 1.5vw, 20px);
+      font-size: 16px;
       opacity: 0.6;
-    }
-
-    .trend {
-      text-align: center;
-      font-size: clamp(18px, 2vw, 30px);
-      margin-top: 10px;
-      font-weight: 700;
-    }
-
-    .status {
-      margin: 2vh auto;
-      padding: 1.5vh 2vw;
-      border-radius: 16px;
-      font-size: clamp(28px, 3vw, 48px);
-      font-weight: 900;
-      text-align: center;
-      display: inline-block;
-      color: white;
-    }
-
-    .gear {
-      text-align: center;
-      font-size: clamp(18px, 2vw, 28px);
-      margin-top: 1vh;
     }
 
     .forecastTitle {
       text-align: center;
-      margin-top: 3vh;
-      font-size: clamp(16px, 1.8vw, 22px);
+      margin-top: 30px;
+      font-size: 18px;
+      font-family: "Paytone One", sans-serif;
       letter-spacing: 2px;
       opacity: 0.8;
-      font-family: "Paytone One", sans-serif;
     }
 
     .forecast {
-      max-width: 1100px;
-      margin: 2vh auto;
-      font-size: clamp(16px, 1.6vw, 22px);
+      margin-top: 20px;
+      font-size: 18px;
       font-weight: 600;
     }
 
     .day {
       display: flex;
       justify-content: space-between;
-      padding: 1vh 0;
+      padding: 10px 0;
       border-bottom: 1px solid #e5e7eb;
-      align-items: center;
     }
 
     .bubble {
       padding: 6px 14px;
       border-radius: 999px;
-      font-size: 14px;
+      font-size: 12px;
       font-weight: 700;
       color: white;
     }
@@ -125,9 +105,48 @@
 
     .updated {
       text-align: center;
-      font-size: 14px;
+      font-size: 12px;
       opacity: 0.6;
       margin-top: 10px;
+    }
+
+    /* RIGHT SIDEBAR */
+    .side {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 25px;
+      padding-left: 10px;
+      border-left: 1px solid #e5e7eb;
+    }
+
+    .status {
+      padding: 20px;
+      border-radius: 16px;
+      font-size: 34px;
+      font-weight: 900;
+      text-align: center;
+      color: white;
+    }
+
+    .trend {
+      text-align: center;
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .gear {
+      text-align: center;
+      font-size: 20px;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    .sideLabel {
+      text-align: center;
+      font-size: 14px;
+      opacity: 0.6;
+      margin-top: -10px;
     }
   </style>
 </head>
@@ -136,35 +155,46 @@
 
 <div class="wrap">
 
-  <div class="title">ZION NARROWS CURRENT CONDITIONS</div>
+  <!-- LEFT MAIN -->
+  <div class="main">
 
-  <div class="topRow">
+    <div class="title">ZION NARROWS CURRENT CONDITIONS</div>
 
-    <div class="bigStat">
-      <div id="flow" class="bigNumber">--</div>
-      <div class="label">CFS</div>
+    <div class="topRow">
+
+      <div class="bigStat">
+        <div id="flow" class="bigNumber">--</div>
+        <div class="label">CFS</div>
+      </div>
+
+      <div class="bigStat">
+        <div id="temp" class="tempNumber">--</div>
+        <div class="label">WATER TEMP</div>
+      </div>
+
     </div>
 
-    <div class="bigStat">
-      <div id="temp" class="tempNumber">--</div>
-      <div class="label">WATER TEMP</div>
-    </div>
+    <div class="forecastTitle">5-DAY ZION FORECAST</div>
+
+    <div id="forecast" class="forecast"></div>
+
+    <div id="updated" class="updated"></div>
 
   </div>
 
-  <div id="trend" class="trend">--</div>
+  <!-- RIGHT SIDEBAR -->
+  <div class="side">
 
-  <div style="text-align:center;">
     <div id="status" class="status">LOADING</div>
+    <div class="sideLabel">CONDITION STATUS</div>
+
+    <div id="trend" class="trend">--</div>
+    <div class="sideLabel">FLOW TREND</div>
+
+    <div id="gear" class="gear"></div>
+    <div class="sideLabel">GEAR RECOMMENDATION</div>
+
   </div>
-
-  <div id="gear" class="gear"></div>
-
-  <div class="forecastTitle">5-DAY ZION FORECAST</div>
-
-  <div id="forecast" class="forecast"></div>
-
-  <div id="updated" class="updated"></div>
 
 </div>
 
@@ -194,16 +224,22 @@ async function load() {
 
     const tempF = tempC ? (tempC * 9/5 + 32) : null;
 
-    let trend = "→ steady";
+    document.getElementById("flow").innerText = cfs.toFixed(0);
+    document.getElementById("temp").innerText =
+      `${tempF.toFixed(0)}°F / ${tempC.toFixed(0)}°C`;
 
+    // TREND
+    let trend = "→ steady";
     if (lastCFS !== null) {
       const diff = cfs - lastCFS;
       if (diff > 5) trend = "↗ rising";
       else if (diff < -5) trend = "↘ falling";
     }
-
     lastCFS = cfs;
 
+    document.getElementById("trend").innerText = trend;
+
+    // STATUS
     let status = "";
     let color = "";
 
@@ -218,31 +254,26 @@ async function load() {
       color = "#16a34a";
     }
 
-    document.getElementById("flow").innerText = cfs.toFixed(0);
-
-    document.getElementById("temp").innerText =
-      `${tempF.toFixed(0)}°F / ${tempC.toFixed(0)}°C`;
-
-    document.getElementById("trend").innerText = "Flow Trend: " + trend;
-
     const statusEl = document.getElementById("status");
     statusEl.innerText = status;
     statusEl.style.background = color;
 
+    // GEAR
     let gear = "";
 
     if (tempF && cfs > 100 && tempF < 65) {
-      gear = "Recommended: Dry Suit Package";
+      gear = "Dry Suit Package";
     } else if (tempF && cfs < 100 && tempF < 65) {
-      gear = "Recommended: Dry Bib Package";
+      gear = "Dry Bib Package";
     } else if (tempF && cfs < 150 && tempF > 65) {
-      gear = "Recommended: Footwear Package";
+      gear = "Footwear Package";
     } else {
-      gear = "Recommended: Standard Canyon Footwear";
+      gear = "Standard Canyon Gear";
     }
 
     document.getElementById("gear").innerText = gear;
 
+    // FORECAST
     const wx = await fetch(
       "https://api.open-meteo.com/v1/forecast?latitude=37.2&longitude=-113.0&daily=precipitation_sum,temperature_2m_max,temperature_2m_min&timezone=auto"
     ).then(r => r.json());
@@ -266,8 +297,8 @@ async function load() {
         <div class="day">
           <div>
             ${labels[i]} — ${wx.daily.precipitation_sum[i]} in |
-            H ${hiF.toFixed(0)}°F / ${wx.daily.temperature_2m_max[i].toFixed(0)}°C |
-            L ${loF.toFixed(0)}°F / ${wx.daily.temperature_2m_min[i].toFixed(0)}°C
+            H ${hiF.toFixed(0)}°F |
+            L ${loF.toFixed(0)}°F
           </div>
           <div class="bubble ${risk(wx.daily.precipitation_sum[i])}">
             ${risk(wx.daily.precipitation_sum[i]).toUpperCase()}
@@ -283,8 +314,6 @@ async function load() {
 
   } catch (e) {
     console.log(e);
-    document.getElementById("status").innerText = "DATA ERROR";
-    document.getElementById("status").style.background = "#6b7280";
   }
 }
 
