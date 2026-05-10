@@ -108,7 +108,7 @@
       margin: 0;
     }
 
-    /* GEAR CONTAINER */
+    /* GEAR WRAPPER */
     .gearWrapper {
       background: white;
       border-radius: 18px;
@@ -126,10 +126,12 @@
       margin-bottom: 12px;
     }
 
+    /* CENTER FIX */
     .gearGrid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 16px;
+      align-items: stretch;
     }
 
     .gearBox {
@@ -137,10 +139,13 @@
       border: 1px solid #e5e7eb;
       border-radius: 14px;
       padding: 14px;
-      text-align: center;
+
       display: flex;
       flex-direction: column;
       justify-content: center;
+      align-items: center;   /* <-- CENTER HORIZONTALLY */
+      text-align: center;
+
       min-height: 120px;
     }
 
@@ -225,6 +230,13 @@
     .med { background: #f59e0b; }
     .high { background: #dc2626; }
 
+    .riskLabel {
+      font-size: 14px;
+      margin-top: 6px;
+      opacity: 0.75;
+      font-weight: 700;
+    }
+
     .updated {
       text-align: center;
       font-size: 14px;
@@ -241,9 +253,7 @@
 
   <div class="title">ZION NARROWS CURRENT CONDITIONS</div>
 
-  <!-- METRICS -->
   <div class="metrics">
-
     <div class="card">
       <div id="flow" class="bigNumber">--</div>
       <div class="label">CFS</div>
@@ -254,20 +264,16 @@
       <div id="temp" class="tempNumber">--</div>
       <div class="label">WATER TEMP</div>
     </div>
-
   </div>
 
-  <!-- STATUS -->
   <div class="statusLabel">NARROWS HIKE STATUS</div>
   <div id="status" class="statusBlock">LOADING</div>
 
-  <!-- GEAR -->
   <div class="gearWrapper">
     <div class="gearTitle">RECOMMENDED PACKAGES</div>
     <div id="gear" class="gearGrid"></div>
   </div>
 
-  <!-- FORECAST -->
   <div>
     <div class="forecastTitle">3-DAY ZION FORECAST</div>
     <div id="forecast" class="forecast"></div>
@@ -302,7 +308,6 @@ async function load() {
   const tempF = tempC * 9/5 + 32;
 
   document.getElementById("flow").innerText = cfs.toFixed(0);
-
   document.getElementById("temp").innerText =
     `${tempF.toFixed(0)}°F / ${tempC.toFixed(0)}°C`;
 
@@ -315,7 +320,6 @@ async function load() {
   }
 
   lastCFS = cfs;
-
   document.getElementById("trend").innerText = trend;
 
   let status = "";
@@ -368,7 +372,6 @@ async function load() {
   `;
 
   const labels = [];
-
   for (let i = 0; i < 3; i++) {
     const d = new Date();
     d.setDate(d.getDate() + i);
@@ -384,18 +387,29 @@ async function load() {
   let html = "";
 
   for (let i = 0; i < 3; i++) {
+
     const hiF = wx.daily.temperature_2m_max[i] * 9/5 + 32;
     const loF = wx.daily.temperature_2m_min[i] * 9/5 + 32;
+
+    const r = risk(wx.daily.precipitation_sum[i]);
+
+    let labelText =
+      r === "low"
+        ? "Low chance of rain"
+        : r === "med"
+          ? "Moderate chance of rain"
+          : "High chance of rain";
 
     html += `
       <div class="dayCard ${i===0?"today":""}">
         ${i===0?`<div class="todayTag">TODAY</div>`:""}
         <div class="dayName">${labels[i]}</div>
         <div>${wx.daily.precipitation_sum[i]} in</div>
+        <div class="riskLabel">${labelText}</div>
         <div>H ${hiF.toFixed(0)}°F</div>
         <div>L ${loF.toFixed(0)}°F</div>
-        <div class="bubble ${risk(wx.daily.precipitation_sum[i])}">
-          ${risk(wx.daily.precipitation_sum[i]).toUpperCase()}
+        <div class="bubble ${r}">
+          ${r.toUpperCase()}
         </div>
       </div>
     `;
