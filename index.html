@@ -20,7 +20,6 @@
       height: 100vh;
       padding: 3vh 4vw;
       box-sizing: border-box;
-
       display: grid;
       grid-template-rows: auto auto auto auto 1fr;
       gap: 18px;
@@ -107,7 +106,6 @@
       color: white;
     }
 
-    /* ✅ FIXED GEAR SECTION */
     .gearWrapper {
       background: white;
       border-radius: 18px;
@@ -250,7 +248,6 @@
   <div class="title">ZION NARROWS CURRENT CONDITIONS</div>
 
   <div class="metrics">
-
     <div class="card">
       <div id="flow" class="bigNumber">--</div>
       <div class="label">CFS</div>
@@ -261,13 +258,11 @@
       <div id="temp" class="tempNumber">--</div>
       <div class="label">WATER TEMP</div>
     </div>
-
   </div>
 
   <div class="statusLabel">NARROWS HIKE STATUS</div>
   <div id="status" class="statusBlock">LOADING</div>
 
-  <!-- ✅ FIXED: ALWAYS VISIBLE NOW -->
   <div class="gearWrapper">
     <div class="gearTitle">RECOMMENDED PACKAGES</div>
     <div id="gear" class="gearGrid"></div>
@@ -321,12 +316,22 @@ async function load() {
   lastCFS = cfs;
   document.getElementById("trend").innerText = trend;
 
+  /* ✅ UPDATED STATUS LOGIC ONLY */
   let status = "";
   let color = "";
 
-  if (cfs > 150) { status = "CLOSED"; color = "#ef4444"; }
-  else if (cfs > 120) { status = "TOP-DOWN CLOSED"; color = "#f59e0b"; }
-  else { status = "OPEN"; color = "#16a34a"; }
+  if (cfs <= 119) {
+    status = "OPEN";
+    color = "#16a34a";
+  }
+  else if (cfs >= 120 && cfs <= 149) {
+    status = "BOTTOM-UP OPEN / TOP-DOWN CLOSED";
+    color = "#f59e0b";
+  }
+  else {
+    status = "CLOSED";
+    color = "#ef4444";
+  }
 
   const statusEl = document.getElementById("status");
   statusEl.innerText = status;
