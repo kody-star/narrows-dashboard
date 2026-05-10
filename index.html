@@ -46,6 +46,7 @@
       padding: 18px;
       box-shadow: 0 12px 25px rgba(70, 50, 30, 0.12);
       border: 1px solid #e7d6c2;
+
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -56,11 +57,13 @@
     .bigNumber {
       font-size: 110px;
       font-weight: 900;
+      line-height: 1;
     }
 
     .tempNumber {
       font-size: 75px;
       font-weight: 900;
+      line-height: 1;
     }
 
     .label {
@@ -75,6 +78,7 @@
       margin-top: 10px;
       font-size: 18px;
       font-weight: 700;
+      opacity: 0.85;
     }
 
     .statusLabel {
@@ -83,6 +87,7 @@
       font-weight: 800;
       letter-spacing: 2px;
       opacity: 0.7;
+      margin-bottom: -6px;
     }
 
     .statusBlock {
@@ -98,6 +103,7 @@
       box-shadow: inset 0 2px 6px rgba(0,0,0,0.15);
     }
 
+    /* GEAR */
     .gearWrapper {
       background: linear-gradient(180deg, #fff7ec, #f2e2cf);
       border-radius: 18px;
@@ -109,6 +115,7 @@
       text-align: center;
       font-weight: 900;
       margin-bottom: 14px;
+      letter-spacing: 2px;
     }
 
     .gearGrid {
@@ -123,6 +130,7 @@
       border-radius: 16px;
       padding: 18px;
       min-height: 120px;
+
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -139,6 +147,17 @@
     .gearBoxValue {
       font-size: 24px;
       font-weight: 900;
+    }
+
+    /* FORECAST */
+    .forecastTitle {
+      text-align: center;
+      font-size: 24px;
+      font-family: "Paytone One", sans-serif;
+      letter-spacing: 2px;
+      margin-bottom: 14px;
+      opacity: 0.85;
+      color: #5a4333;
     }
 
     .forecast {
@@ -167,16 +186,22 @@
       right: 8px;
       background: #6b4f3a;
       color: white;
-      padding: 5px 10px;
-      border-radius: 999px;
       font-size: 12px;
       font-weight: 900;
+      padding: 5px 10px;
+      border-radius: 999px;
     }
 
     .dayName {
       font-weight: 900;
       font-size: 28px;
       margin-bottom: 14px;
+      color: #3b2f28;
+    }
+
+    .dayCard div {
+      font-size: 24px;
+      line-height: 1.6;
     }
 
     .bubble {
@@ -187,6 +212,7 @@
       font-weight: 800;
       color: white;
       margin-top: 10px;
+      opacity: 0.95;
     }
 
     .low { background: #4f7d6b; }
@@ -195,9 +221,11 @@
 
     .updated {
       text-align: center;
+      font-size: 14px;
       opacity: 0.6;
       margin-top: 14px;
     }
+
   </style>
 </head>
 
@@ -208,6 +236,7 @@
   <div class="title">ZION NARROWS CURRENT CONDITIONS</div>
 
   <div class="metrics">
+
     <div class="card">
       <div id="flow" class="bigNumber">--</div>
       <div class="label">CFS</div>
@@ -218,6 +247,7 @@
       <div id="temp" class="tempNumber">--</div>
       <div class="label">WATER TEMP</div>
     </div>
+
   </div>
 
   <div class="statusLabel">NARROWS HIKE STATUS</div>
@@ -227,25 +257,27 @@
     <div class="gearTitle">RECOMMENDED PACKAGES</div>
     <div class="gearGrid">
       <div class="gearBox">
-        <div class="gearBoxTitle">HIKING TODAY</div>
+        <div class="gearBoxTitle">HIKING NOW</div>
         <div id="gearToday" class="gearBoxValue">--</div>
       </div>
 
       <div class="gearBox">
-        <div class="gearBoxTitle">HIKING TOMORROW</div>
+        <div class="gearBoxTitle">HIKING TOMORROW AM</div>
         <div id="gearTomorrow" class="gearBoxValue">--</div>
       </div>
     </div>
   </div>
 
   <div>
-    <div class="forecast"></div>
+    <div class="forecastTitle">3-DAY ZION FORECAST</div>
+    <div id="forecast" class="forecast"></div>
     <div id="updated" class="updated"></div>
   </div>
 
 </div>
 
 <script>
+
 let lastCFS = null;
 
 async function load() {
@@ -274,6 +306,7 @@ async function load() {
     `${tempF.toFixed(0)}°F / ${tempC.toFixed(0)}°C`;
 
   let trend = "→ steady";
+
   if (lastCFS !== null) {
     const diff = cfs - lastCFS;
     if (diff > 5) trend = "↗ rising";
@@ -290,7 +323,7 @@ async function load() {
     status = "OPEN";
     color = "#2f6f5e";
   } else if (cfs <= 149) {
-    status = "TOP-DOWN CLOSED / BOTTOM-UP OPEN";
+    status = "BOTTOM-UP OPEN / TOP-DOWN CLOSED";
     color = "#c08a3e";
   } else {
     status = "CLOSED";
@@ -301,6 +334,7 @@ async function load() {
   statusEl.innerText = status;
   statusEl.style.background = color;
 
+  // GEARS
   let gear = "Standard Canyon Gear";
   if (tempF < 65 && cfs > 100) gear = "Dry Suit Package";
   else if (tempF < 65) gear = "Dry Bib Package";
@@ -309,12 +343,65 @@ async function load() {
   document.getElementById("gearToday").innerText = gear;
   document.getElementById("gearTomorrow").innerText = gear;
 
+  // FORECAST (RESTORED)
+  const wx = await fetch(
+    "https://api.open-meteo.com/v1/forecast?latitude=37.2&longitude=-113.0&daily=precipitation_sum,temperature_2m_max,temperature_2m_min&timezone=auto"
+  ).then(r => r.json());
+
+  const labels = [];
+  for (let i = 0; i < 3; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() + i);
+    labels.push(`${d.getMonth()+1}-${d.getDate()}`);
+  }
+
+  function risk(v) {
+    if (v < 0.25) return "low";
+    if (v < 0.75) return "med";
+    return "high";
+  }
+
+  let html = "";
+
+  for (let i = 0; i < 3; i++) {
+
+    const hiF = wx.daily.temperature_2m_max[i] * 9/5 + 32;
+    const loF = wx.daily.temperature_2m_min[i] * 9/5 + 32;
+    const r = risk(wx.daily.precipitation_sum[i]);
+
+    const label =
+      r === "low"
+        ? "Chance of rain: LOW"
+        : r === "med"
+          ? "Chance of rain: MODERATE"
+          : "Chance of rain: HIGH";
+
+    html += `
+      <div class="dayCard ${i===0?"today":""}">
+        ${i===0?`<div class="todayTag">TODAY</div>`:""}
+        <div class="dayName">${labels[i]}</div>
+
+        <div>Precipitation: ${wx.daily.precipitation_sum[i]} in</div>
+
+        <div class="bubble ${r}">
+          ${label}
+        </div>
+
+        <div>H ${hiF.toFixed(0)}°F / ${wx.daily.temperature_2m_max[i].toFixed(0)}°C</div>
+        <div>L ${loF.toFixed(0)}°F / ${wx.daily.temperature_2m_min[i].toFixed(0)}°C</div>
+      </div>
+    `;
+  }
+
+  document.getElementById("forecast").innerHTML = html;
+
   document.getElementById("updated").innerText =
     "Last Updated: " + new Date().toLocaleString();
 }
 
 load();
 setInterval(load, 60000);
+
 </script>
 
 </body>
