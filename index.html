@@ -299,11 +299,15 @@ async function load() {
     if (code === "00010") tempC = Number(val);
   });
 
-  const tempF = tempC * 9/5 + 32;
+  const tempF = (tempC !== null && !isNaN(tempC))
+    ? tempC * 9/5 + 32
+    : null;
 
   document.getElementById("flow").innerText = cfs.toFixed(0);
   document.getElementById("temp").innerText =
-    `${tempF.toFixed(0)}°F / ${tempC.toFixed(0)}°C`;
+    tempF !== null
+      ? `${tempF.toFixed(0)}°F / ${tempC.toFixed(0)}°C`
+      : "Loading...";
 
   let trend = "→ steady";
 
@@ -340,7 +344,6 @@ async function load() {
     "https://api.open-meteo.com/v1/forecast?latitude=37.2&longitude=-113.0&daily=precipitation_sum,temperature_2m_max,temperature_2m_min&timezone=auto"
   ).then(r => r.json());
 
-  /* ✅ FIX RESTORED */
   const labels = [];
   for (let i = 0; i < 3; i++) {
     const d = new Date();
