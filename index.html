@@ -316,7 +316,6 @@ async function load() {
   lastCFS = cfs;
   document.getElementById("trend").innerText = trend;
 
-  /* ✅ UPDATED STATUS LOGIC ONLY */
   let status = "";
   let color = "";
 
@@ -340,47 +339,6 @@ async function load() {
   const wx = await fetch(
     "https://api.open-meteo.com/v1/forecast?latitude=37.2&longitude=-113.0&daily=precipitation_sum,temperature_2m_max,temperature_2m_min&timezone=auto"
   ).then(r => r.json());
-
-  function getGear(tempF, cfs) {
-    if (tempF > 62 && cfs < 150) return "Footwear Package";
-    if (tempF < 62 && cfs < 100) return "Dry Bib Package";
-    if (tempF < 62 && cfs > 100) return "Dry Suit Package";
-    return "Standard Canyon Gear";
-  }
-
-  const current = getGear(tempF, cfs);
-
-  const now = new Date();
-  const key = `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`;
-  const savedKey = localStorage.getItem("gearKey");
-  let tomorrow = localStorage.getItem("gearTomorrow");
-
-  if (now.getHours() >= 8 && savedKey !== key) {
-    localStorage.setItem("gearTomorrow", current);
-    localStorage.setItem("gearKey", key);
-    tomorrow = current;
-  }
-
-  if (!tomorrow) tomorrow = current;
-
-  document.getElementById("gear").innerHTML = `
-    <div class="gearBox">
-      <div class="gearBoxTitle">HIKING NOW</div>
-      <div class="gearBoxValue">${current}</div>
-    </div>
-
-    <div class="gearBox">
-      <div class="gearBoxTitle">TOMORROW MORNING</div>
-      <div class="gearBoxValue">${tomorrow}</div>
-    </div>
-  `;
-
-  const labels = [];
-  for (let i = 0; i < 3; i++) {
-    const d = new Date();
-    d.setDate(d.getDate() + i);
-    labels.push(`${d.getMonth()+1}-${d.getDate()}`);
-  }
 
   function risk(v) {
     if (v < 0.25) return "low";
@@ -409,7 +367,8 @@ async function load() {
         ${i===0?`<div class="todayTag">TODAY</div>`:""}
         <div class="dayName">${labels[i]}</div>
 
-        <div>${wx.daily.precipitation_sum[i]} in</div>
+        <!-- ONLY CHANGE MADE HERE -->
+        <div>Precipitation: ${wx.daily.precipitation_sum[i]} in</div>
 
         <div class="bubble ${r}">
           ${label}
