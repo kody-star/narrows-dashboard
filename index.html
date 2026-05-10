@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html>
 <head>
@@ -109,12 +110,14 @@
       margin: 0;
     }
 
+    /* GEAR */
     .gear {
       text-align: center;
       font-size: 22px;
       font-weight: 700;
       margin-top: 6px;
-      opacity: 0.9;
+      opacity: 0.92;
+      line-height: 1.5;
     }
 
     .forecastTitle {
@@ -225,6 +228,7 @@
   <div class="statusLabel">NARROWS HIKE STATUS</div>
   <div id="status" class="statusBlock">LOADING</div>
 
+  <!-- GEAR -->
   <div id="gear" class="gear"></div>
 
   <!-- FORECAST -->
@@ -237,10 +241,12 @@
 </div>
 
 <script>
+
 let lastCFS = null;
 
 async function load() {
 
+  // RIVER DATA
   const river = await fetch(
     "https://waterservices.usgs.gov/nwis/iv/?format=json&sites=09405500&parameterCd=00060,00010"
   ).then(r => r.json());
@@ -251,16 +257,20 @@ async function load() {
   let tempC = null;
 
   series.forEach(s => {
+
     const code = s?.variable?.variableCode?.[0]?.value;
     const val = s?.values?.[0]?.value?.[0]?.value;
 
     if (code === "00060") cfs = Number(val);
     if (code === "00010") tempC = Number(val);
+
   });
 
   const tempF = tempC * 9/5 + 32;
 
-  document.getElementById("flow").innerText = cfs.toFixed(0);
+  // DISPLAY CURRENT METRICS
+  document.getElementById("flow").innerText =
+    cfs.toFixed(0);
 
   document.getElementById("temp").innerText =
     `${tempF.toFixed(0)}°F / ${tempC.toFixed(0)}°C`;
@@ -269,55 +279,136 @@ async function load() {
   let trend = "→ steady";
 
   if (lastCFS !== null) {
+
     const diff = cfs - lastCFS;
 
-    if (diff > 5) trend = "↗ rising";
-    else if (diff < -5) trend = "↘ falling";
+    if (diff > 5) {
+      trend = "↗ rising";
+    }
+    else if (diff < -5) {
+      trend = "↘ falling";
+    }
   }
 
   lastCFS = cfs;
 
-  document.getElementById("trend").innerText = trend;
+  document.getElementById("trend").innerText =
+    trend;
 
   // STATUS
   let status = "";
   let color = "";
 
   if (cfs > 150) {
+
     status = "CLOSED";
     color = "#ef4444";
+
   }
   else if (cfs > 120) {
+
     status = "TOP-DOWN CLOSED";
     color = "#f59e0b";
+
   }
   else {
+
     status = "OPEN";
     color = "#16a34a";
+
   }
 
-  const statusEl = document.getElementById("status");
+  const statusEl =
+    document.getElementById("status");
 
   statusEl.innerText = status;
   statusEl.style.background = color;
 
-  // GEAR
-  let gear = "";
+  // WEATHER
+  const wx = await fetch(
+    "https://api.open-meteo.com/v1/forecast?latitude=37.2&longitude=-113.0&daily=precipitation_sum,temperature_2m_max,temperature_2m_min&timezone=auto"
+  ).then(r => r.json());
 
-  if (tempF > 65 && cfs < 150) {
-    gear = "Recommended package for current conditions: Footwear Package";
-  }
-  else if (tempF < 65 && cfs < 100) {
-    gear = "Recommended package for current conditions: Dry Bib Package";
-  }
-  else if (tempF < 65 && cfs > 100) {
-    gear = "Recommended package for current conditions: Dry Suit Package";
-  }
-  else {
-    gear = "Recommended package for current conditions: Standard Canyon Gear";
+  // GEAR LOGIC
+
+  function getGearRecommendation(tempF, cfs) {
+
+    if (tempF > 65 && cfs < 150) {
+      return "Footwear Package";
+    }
+    else if (tempF < 65 && cfs < 100) {
+      return "Dry Bib Package";
+    }
+    else if (tempF < 65 && cfs > 100) {
+      return "Dry Suit Package";
+    }
+    else {
+      return "Standard Canyon Gear";
+    }
   }
 
-  document.getElementById("gear").innerText = gear;
+  // CURRENT RECOMMENDATION
+  const currentPackage =
+    getGearRecommendation(tempF, cfs);
+
+  // TOMORROW MORNING RECOMMENDATION
+  // SAVED DAILY AT 8 AM
+
+  const now = new Date();
+
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+  const day = now.getDate();
+
+  const todayKey =
+    `${year}-${month}-${day}`;
+
+  const savedKey =
+    localStorage.getItem("tomorrowGearDate");
+
+  let tomorrowPackage =
+    localStorage.getItem("tomorrowGearRecommendation");
+
+  // SAVE TODAY'S RECOMMENDATION AT/AFTER 8AM
+  if (
+    now.getHours() >= 8 &&
+    savedKey !== todayKey
+  ) {
+
+    localStorage.setItem(
+      "tomorrowGearRecommendation",
+      currentPackage
+    );
+
+    localStorage.setItem(
+      "tomorrowGearDate",
+      todayKey
+    );
+
+    tomorrowPackage = currentPackage;
+  }
+
+  // FALLBACK
+  if (!tomorrowPackage) {
+    tomorrowPackage = currentPackage;
+  }
+
+  // DISPLAY GEAR
+  document.getElementById("gear").innerHTML = `
+    <div style="margin-bottom:14px;">
+      <strong>
+        Recommended Package for Hiking Now:
+      </strong><br>
+      ${currentPackage}
+    </div>
+
+    <div>
+      <strong>
+        Recommended Package for Tomorrow Morning:
+      </strong><br>
+      ${tomorrowPackage}
+    </div>
+  `;
 
   // DYNAMIC MM-DD LABELS
   const labels = [];
@@ -334,32 +425,38 @@ async function load() {
     labels.push(`${m}-${day}`);
   }
 
-  // WEATHER
-  const wx = await fetch(
-    "https://api.open-meteo.com/v1/forecast?latitude=37.2&longitude=-113.0&daily=precipitation_sum,temperature_2m_max,temperature_2m_min&timezone=auto"
-  ).then(r => r.json());
-
+  // RISK LOGIC
   function risk(v) {
+
     if (v < 0.25) return "low";
     if (v < 0.75) return "med";
+
     return "high";
   }
 
+  // FORECAST HTML
   let html = "";
 
   for (let i = 0; i < 3; i++) {
 
-    const hiF = wx.daily.temperature_2m_max[i] * 9/5 + 32;
-    const loF = wx.daily.temperature_2m_min[i] * 9/5 + 32;
+    const hiF =
+      wx.daily.temperature_2m_max[i] * 9/5 + 32;
+
+    const loF =
+      wx.daily.temperature_2m_min[i] * 9/5 + 32;
 
     html += `
       <div class="dayCard ${i === 0 ? "today" : ""}">
 
-        ${i === 0 ? `<div class="todayTag">TODAY</div>` : ""}
+        ${i === 0
+          ? `<div class="todayTag">TODAY</div>`
+          : ""}
 
         <div class="dayName">${labels[i]}</div>
 
-        <div>${wx.daily.precipitation_sum[i]} in rain</div>
+        <div>
+          ${wx.daily.precipitation_sum[i]} in rain
+        </div>
 
         <div>
           H ${hiF.toFixed(0)}°F /
@@ -379,15 +476,23 @@ async function load() {
     `;
   }
 
-  document.getElementById("forecast").innerHTML = html;
+  document.getElementById("forecast").innerHTML =
+    html;
 
+  // UPDATED TIME
   document.getElementById("updated").innerText =
-    "Last Updated: " + new Date().toLocaleString();
+    "Last Updated: " +
+    new Date().toLocaleString();
 }
 
+// INITIAL LOAD
 load();
+
+// REFRESH EVERY MINUTE
 setInterval(load, 60000);
+
 </script>
 
 </body>
 </html>
+```
