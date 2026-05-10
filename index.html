@@ -343,8 +343,8 @@ async function load() {
   statusEl.style.background = color;
 
   let gear = "Standard Canyon Gear";
-  if (tempF < 65 && cfs > 100) gear = "Dry Suit Package";
-  else if (tempF < 65) gear = "Dry Bib Package";
+  if (tempF < 62 && cfs > 100) gear = "Dry Suit Package";
+  else if (tempF < 62) gear = "Dry Bib Package";
   else if (cfs < 150) gear = "Footwear Package";
 
   document.getElementById("gearToday").innerText = gear;
