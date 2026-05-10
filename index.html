@@ -107,7 +107,6 @@
       margin: 0;
     }
 
-    /* GEAR */
     .gearWrapper {
       background: white;
       border-radius: 18px;
@@ -214,14 +213,15 @@
       line-height: 1.6;
     }
 
+    /* SMALLER BUBBLE */
     .bubble {
       display: inline-block;
-      padding: 10px 18px;
+      padding: 6px 12px;
       border-radius: 999px;
-      font-size: 18px;
+      font-size: 14px;
       font-weight: 800;
       color: white;
-      margin-top: 12px;
+      margin-top: 10px;
     }
 
     .low { background: #16a34a; }
@@ -245,7 +245,6 @@
   <div class="title">ZION NARROWS CURRENT CONDITIONS</div>
 
   <div class="metrics">
-
     <div class="card">
       <div id="flow" class="bigNumber">--</div>
       <div class="label">CFS</div>
@@ -256,7 +255,6 @@
       <div id="temp" class="tempNumber">--</div>
       <div class="label">WATER TEMP</div>
     </div>
-
   </div>
 
   <div class="statusLabel">NARROWS HIKE STATUS</div>
@@ -330,47 +328,6 @@ async function load() {
     "https://api.open-meteo.com/v1/forecast?latitude=37.2&longitude=-113.0&daily=precipitation_sum,temperature_2m_max,temperature_2m_min&timezone=auto"
   ).then(r => r.json());
 
-  function getGear(tempF, cfs) {
-    if (tempF > 65 && cfs < 150) return "Footwear Package";
-    if (tempF < 65 && cfs < 100) return "Dry Bib Package";
-    if (tempF < 65 && cfs > 100) return "Dry Suit Package";
-    return "Standard Canyon Gear";
-  }
-
-  const current = getGear(tempF, cfs);
-
-  const now = new Date();
-  const key = `${now.getFullYear()}-${now.getMonth()+1}-${now.getDate()}`;
-  const savedKey = localStorage.getItem("gearKey");
-  let tomorrow = localStorage.getItem("gearTomorrow");
-
-  if (now.getHours() >= 8 && savedKey !== key) {
-    localStorage.setItem("gearTomorrow", current);
-    localStorage.setItem("gearKey", key);
-    tomorrow = current;
-  }
-
-  if (!tomorrow) tomorrow = current;
-
-  document.getElementById("gear").innerHTML = `
-    <div class="gearBox">
-      <div class="gearBoxTitle">HIKING NOW</div>
-      <div class="gearBoxValue">${current}</div>
-    </div>
-
-    <div class="gearBox">
-      <div class="gearBoxTitle">TOMORROW MORNING</div>
-      <div class="gearBoxValue">${tomorrow}</div>
-    </div>
-  `;
-
-  const labels = [];
-  for (let i = 0; i < 3; i++) {
-    const d = new Date();
-    d.setDate(d.getDate() + i);
-    labels.push(`${d.getMonth()+1}-${d.getDate()}`);
-  }
-
   function risk(v) {
     if (v < 0.25) return "low";
     if (v < 0.75) return "med";
@@ -386,17 +343,17 @@ async function load() {
 
     const r = risk(wx.daily.precipitation_sum[i]);
 
-    let label =
+    const label =
       r === "low"
-        ? "LOW CHANCE OF RAIN"
+        ? "Chance of rain: LOW"
         : r === "med"
-          ? "MODERATE CHANCE OF RAIN"
-          : "HIGH CHANCE OF RAIN";
+          ? "Chance of rain: MODERATE"
+          : "Chance of rain: HIGH";
 
     html += `
       <div class="dayCard ${i===0?"today":""}">
         ${i===0?`<div class="todayTag">TODAY</div>`:""}
-        <div class="dayName">${labels[i]}</div>
+        <div class="dayName">${wx.daily.time[i].slice(5)}</div>
 
         <div>${wx.daily.precipitation_sum[i]} in</div>
 
