@@ -340,6 +340,14 @@ async function load() {
     "https://api.open-meteo.com/v1/forecast?latitude=37.2&longitude=-113.0&daily=precipitation_sum,temperature_2m_max,temperature_2m_min&timezone=auto"
   ).then(r => r.json());
 
+  /* ✅ FIX RESTORED */
+  const labels = [];
+  for (let i = 0; i < 3; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() + i);
+    labels.push(`${d.getMonth()+1}-${d.getDate()}`);
+  }
+
   function risk(v) {
     if (v < 0.25) return "low";
     if (v < 0.75) return "med";
@@ -367,7 +375,6 @@ async function load() {
         ${i===0?`<div class="todayTag">TODAY</div>`:""}
         <div class="dayName">${labels[i]}</div>
 
-        <!-- ONLY CHANGE MADE HERE -->
         <div>Precipitation: ${wx.daily.precipitation_sum[i]} in</div>
 
         <div class="bubble ${r}">
