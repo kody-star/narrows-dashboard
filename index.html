@@ -342,9 +342,9 @@ async function load() {
   ).then(r => r.json());
 
   function getGear(tempF, cfs) {
-    if (tempF > 65 && cfs < 150) return "Footwear Package";
-    if (tempF < 65 && cfs < 100) return "Dry Bib Package";
-    if (tempF < 65 && cfs > 100) return "Dry Suit Package";
+    if (tempF > 62 && cfs < 150) return "Footwear Package";
+    if (tempF < 62 && cfs < 100) return "Dry Bib Package";
+    if (tempF < 62 && cfs > 100) return "Dry Suit Package";
     return "Standard Canyon Gear";
   }
 
