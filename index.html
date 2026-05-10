@@ -32,7 +32,6 @@
       letter-spacing: 3px;
     }
 
-    /* METRICS */
     .metrics {
       display: flex;
       justify-content: space-between;
@@ -108,7 +107,7 @@
       margin: 0;
     }
 
-    /* GEAR WRAPPER */
+    /* GEAR */
     .gearWrapper {
       background: white;
       border-radius: 18px;
@@ -126,7 +125,6 @@
       margin-bottom: 12px;
     }
 
-    /* CENTER FIX */
     .gearGrid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -143,7 +141,7 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
-      align-items: center;   /* <-- CENTER HORIZONTALLY */
+      align-items: center;
       text-align: center;
 
       min-height: 120px;
@@ -230,13 +228,6 @@
     .med { background: #f59e0b; }
     .high { background: #dc2626; }
 
-    .riskLabel {
-      font-size: 14px;
-      margin-top: 6px;
-      opacity: 0.75;
-      font-weight: 700;
-    }
-
     .updated {
       text-align: center;
       font-size: 14px;
@@ -254,6 +245,7 @@
   <div class="title">ZION NARROWS CURRENT CONDITIONS</div>
 
   <div class="metrics">
+
     <div class="card">
       <div id="flow" class="bigNumber">--</div>
       <div class="label">CFS</div>
@@ -264,6 +256,7 @@
       <div id="temp" class="tempNumber">--</div>
       <div class="label">WATER TEMP</div>
     </div>
+
   </div>
 
   <div class="statusLabel">NARROWS HIKE STATUS</div>
@@ -393,24 +386,26 @@ async function load() {
 
     const r = risk(wx.daily.precipitation_sum[i]);
 
-    let labelText =
+    let label =
       r === "low"
-        ? "Low chance of rain"
+        ? "LOW CHANCE OF RAIN"
         : r === "med"
-          ? "Moderate chance of rain"
-          : "High chance of rain";
+          ? "MODERATE CHANCE OF RAIN"
+          : "HIGH CHANCE OF RAIN";
 
     html += `
       <div class="dayCard ${i===0?"today":""}">
         ${i===0?`<div class="todayTag">TODAY</div>`:""}
         <div class="dayName">${labels[i]}</div>
+
         <div>${wx.daily.precipitation_sum[i]} in</div>
-        <div class="riskLabel">${labelText}</div>
-        <div>H ${hiF.toFixed(0)}°F</div>
-        <div>L ${loF.toFixed(0)}°F</div>
+
         <div class="bubble ${r}">
-          ${r.toUpperCase()}
+          ${label}
         </div>
+
+        <div>H ${hiF.toFixed(0)}°F / ${wx.daily.temperature_2m_max[i].toFixed(0)}°C</div>
+        <div>L ${loF.toFixed(0)}°F / ${wx.daily.temperature_2m_min[i].toFixed(0)}°C</div>
       </div>
     `;
   }
