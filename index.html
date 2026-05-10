@@ -131,7 +131,6 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 16px;
-      height: 100%;
       align-items: center;
     }
 
@@ -140,13 +139,11 @@
       border: 1px solid #e5e7eb;
       border-radius: 14px;
       padding: 14px;
-
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       text-align: center;
-
       min-height: 120px;
     }
 
@@ -237,7 +234,6 @@
       opacity: 0.6;
       margin-top: 14px;
     }
-
   </style>
 </head>
 
@@ -327,7 +323,7 @@ async function load() {
     status = "OPEN";
     color = "#16a34a";
   }
-  else if (cfs >= 120 && cfs <= 149) {
+  else if (cfs <= 149) {
     status = "BOTTOM-UP OPEN / TOP-DOWN CLOSED";
     color = "#f59e0b";
   }
@@ -339,6 +335,31 @@ async function load() {
   const statusEl = document.getElementById("status");
   statusEl.innerText = status;
   statusEl.style.background = color;
+
+  // ✅ GEARS RESTORED (this was missing)
+  let flowGear = "";
+  let coldGear = "";
+
+  if (cfs <= 119) flowGear = "Standard / Footwear Package";
+  else if (cfs <= 149) flowGear = "Dry Bib Recommended";
+  else flowGear = "Dry Suit Required";
+
+  if (tempF === null) coldGear = "Loading...";
+  else if (tempF >= 65) coldGear = "Minimal insulation";
+  else if (tempF >= 55) coldGear = "Moderate insulation";
+  else coldGear = "Full thermal protection";
+
+  document.getElementById("gear").innerHTML = `
+    <div class="gearBox">
+      <div class="gearBoxTitle">FLOW CONDITIONS</div>
+      <div class="gearBoxValue">${flowGear}</div>
+    </div>
+
+    <div class="gearBox">
+      <div class="gearBoxTitle">COLD SENSITIVITY</div>
+      <div class="gearBoxValue">${coldGear}</div>
+    </div>
+  `;
 
   const wx = await fetch(
     "https://api.open-meteo.com/v1/forecast?latitude=37.2&longitude=-113.0&daily=precipitation_sum,temperature_2m_max,temperature_2m_min&timezone=auto"
