@@ -225,8 +225,9 @@
     .updated {
       text-align: center;
       font-size: 14px;
-      opacity: 0.6;
+      opacity: 0.75;
       margin-top: 14px;
+      line-height: 1.4;
     }
 
   </style>
@@ -279,14 +280,39 @@
 </div>
 
 <script>
-
 let lastCFS = null;
+
+const WX_LAT = 37.20007883740497;
+const WX_LON = -112.98688895601737;
+
+async function fetchJSON(url, options = {}) {
+  const res = await fetch(url, options);
+  if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+  return res.json();
+}
+
+function formatLabel(dateStr) {
+  const d = new Date(dateStr + "T12:00:00");
+  return `${d.getMonth() + 1}-${d.getDate()}`;
+}
+
+function risk(prob) {
+  if (prob < 20) return "low";
+  if (prob < 50) return "med";
+  return "high";
+}
+
+function riskLabel(prob) {
+  if (prob < 20) return "Chance of rain: LOW";
+  if (prob < 50) return "Chance of rain: MODERATE";
+  return "Chance of rain: HIGH";
+}
 
 async function load() {
 
-  const river = await fetch(
+  const river = await fetchJSON(
     "https://waterservices.usgs.gov/nwis/iv/?format=json&sites=09405500&parameterCd=00060,00010"
-  ).then(r => r.json());
+  );
 
   const series = river?.value?.timeSeries || [];
 
@@ -347,63 +373,45 @@ async function load() {
     "Footwear Package";
 
   // WEATHER FORECAST
-  const wx = await fetch(
-  "https://api.open-meteo.com/v1/forecast?latitude=37.2001&longitude=-112.9869&daily=precipitation_sum,temperature_2m_max,temperature_2m_min&timezone=auto"
-).then(r => r.json());
-  
-  const labels = [];
-
-  for (let i = 0; i < 3; i++) {
-    const d = new Date();
-    d.setDate(d.getDate() + i);
-
-    labels.push(`${d.getMonth()+1}-${d.getDate()}`);
-  }
-
-  function risk(v) {
-    if (v < 0.25) return "low";
-    if (v < 0.75) return "med";
-    return "high";
-  }
+  const wx = await fetchJSON(
+    `https://api.open-meteo.com/v1/forecast?latitude=${WX_LAT}&longitude=${WX_LON}&daily=precipitation_sum,precipitation_probability_max,temperature_2m_max,temperature_2m_min&precipitation_unit=inch&timezone=auto&forecast_days=3`
+  );
 
   let html = "";
 
   for (let i = 0; i < 3; i++) {
 
-    const hiF = wx.daily.temperature_2m_max[i] * 9/5 + 32;
-    const loF = wx.daily.temperature_2m_min[i] * 9/5 + 32;
+    const hiC = wx.daily.temperature_2m_max[i];
+    const loC = wx.daily.temperature_2m_min[i];
+    const hiF = hiC * 9/5 + 32;
+    const loF = loC * 9/5 + 32;
+    const precipIn = wx.daily.precipitation_sum[i] ?? 0;
+    const precipProb = wx.daily.precipitation_probability_max?.[i] ?? 0;
 
-    const r = risk(wx.daily.precipitation_sum[i]);
-
-    const label =
-      r === "low"
-        ? "Chance of rain: LOW"
-        : r === "med"
-          ? "Chance of rain: MODERATE"
-          : "Chance of rain: HIGH";
+    const r = risk(precipProb);
 
     html += `
       <div class="dayCard ${i===0?"today":""}">
         ${i===0?`<div class="todayTag">TODAY</div>`:""}
 
-        <div class="dayName">${labels[i]}</div>
+        <div class="dayName">${formatLabel(wx.daily.time[i])}</div>
 
         <div>
-          Precipitation: ${wx.daily.precipitation_sum[i]} in
+          Precipitation: ${precipIn.toFixed(2)} in
         </div>
 
         <div class="bubble ${r}">
-          ${label}
+          ${riskLabel(precipProb)} (${Math.round(precipProb)}%)
         </div>
 
         <div>
           H ${hiF.toFixed(0)}°F /
-          ${wx.daily.temperature_2m_max[i].toFixed(0)}°C
+          ${hiC.toFixed(0)}°C
         </div>
 
         <div>
           L ${loF.toFixed(0)}°F /
-          ${wx.daily.temperature_2m_min[i].toFixed(0)}°C
+          ${loC.toFixed(0)}°C
         </div>
 
       </div>
@@ -412,13 +420,37 @@ async function load() {
 
   document.getElementById("forecast").innerHTML = html;
 
+  let nwsMessage = "No active NWS alerts for this Zion point.";
+
+  try {
+    const alerts = await fetchJSON(
+      `https://api.weather.gov/alerts/active?point=${WX_LAT},${WX_LON}`,
+      {
+        headers: {
+          "Accept": "application/geo+json"
+        }
+      }
+    );
+
+    const features = alerts?.features || [];
+    const relevant = features.filter(f => {
+      const event = f?.properties?.event || "";
+      return /flood|flash flood|thunderstorm|severe/i.test(event);
+    });
+
+    if (relevant.length) {
+      nwsMessage = `NWS ALERT: ${relevant[0].properties.event}`;
+    }
+  } catch (e) {
+    nwsMessage = "NWS alerts temporarily unavailable.";
+  }
+
   document.getElementById("updated").innerText =
-    "Last Updated: " + new Date().toLocaleString();
+    `${nwsMessage} • Last Updated: ` + new Date().toLocaleString();
 }
 
 load();
 setInterval(load, 60000);
-
 </script>
 
 </body>
