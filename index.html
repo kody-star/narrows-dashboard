@@ -33,16 +33,6 @@ letter-spacing: 3px;
 color: #5a4333;
 }
 
-.titleDisclaimer {
-text-align: center;
-font-size: 14px;
-line-height: 1.5;
-color: #6b5a4d;
-max-width: 900px;
-margin: -6px auto 0;
-opacity: 0.9;
-}
-
 .metrics {
 display: flex;
 justify-content: space-between;
@@ -248,7 +238,6 @@ line-height: 1.4;
 <div class="wrap">
 
 <div class="title">ZION NARROWS CURRENT CONDITIONS</div>
-<div class="titleDisclaimer">This screen is for educational purposes only and may contain inaccurate or outdated information. Weather and canyon conditions can change rapidly and unpredictably.</div>
 
 <div class="metrics">
 
@@ -273,3 +262,197 @@ line-height: 1.4;
 <div class="gearTitle">RECOMMENDED PACKAGE</div>
 
 <div class="gearBox">
+<div id="gearToday" class="gearBoxValue">--</div>
+</div>
+
+<div class="gearDisclaimer">
+Appropriate package selection may vary based on individual cold sensitivity.
+</div>
+
+</div>
+
+<div>
+<div class="forecastTitle">3-DAY ZION FORECAST</div>
+<div id="forecast" class="forecast"></div>
+<div id="updated" class="updated"></div>
+</div>
+
+</div>
+
+<script>
+let lastCFS = null;
+
+const WX_LAT = 37.20007883740497;
+const WX_LON = -112.98688895601737;
+
+async function fetchJSON(url, options = {}) {
+const res = await fetch(url, options);
+if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+return res.json();
+}
+
+function formatLabel(dateStr) {
+const d = new Date(dateStr + "T12:00:00");
+return `${d.getMonth() + 1}-${d.getDate()}`;
+}
+
+function risk(prob) {
+if (prob < 20) return "low";
+if (prob < 50) return "med";
+return "high";
+}
+
+function riskLabel(prob) {
+if (prob < 20) return "Chance of rain: LOW";
+if (prob < 50) return "Chance of rain: MODERATE";
+return "Chance of rain: HIGH";
+}
+
+async function load() {
+
+const river = await fetchJSON(
+"https://waterservices.usgs.gov/nwis/iv/?format=json&sites=09405500&parameterCd=00060,00010"
+);
+
+const series = river?.value?.timeSeries || [];
+
+let cfs = null;
+let tempC = null;
+
+series.forEach(s => {
+const code = s?.variable?.variableCode?.[0]?.value;
+const val = s?.values?.[0]?.value?.[0]?.value;
+
+if (code === "00060") cfs = Number(val);
+if (code === "00010") tempC = Number(val);
+});
+
+const tempF = tempC * 9/5 + 32;
+
+document.getElementById("flow").innerText = cfs.toFixed(0);
+
+document.getElementById("temp").innerText =
+`${tempF.toFixed(0)}°F / ${tempC.toFixed(0)}°C`;
+
+// TREND
+let trend = "→ steady";
+
+if (lastCFS !== null) {
+const diff = cfs - lastCFS;
+
+if (diff > 5) trend = "↗ rising";
+else if (diff < -5) trend = "↘ falling";
+}
+
+lastCFS = cfs;
+
+document.getElementById("trend").innerText = trend;
+
+// STATUS
+let status = "";
+let color = "";
+
+if (cfs <= 119) {
+status = "OPEN";
+color = "#2f6f5e";
+} else if (cfs <= 149) {
+status = "BOTTOM-UP OPEN / TOP-DOWN CLOSED";
+color = "#c08a3e";
+} else {
+status = "CLOSED";
+color = "#a33a2a";
+}
+
+const statusEl = document.getElementById("status");
+
+statusEl.innerText = status;
+statusEl.style.background = color;
+
+// STATIC PACKAGE RECOMMENDATION
+document.getElementById("gearToday").innerText =
+"Footwear Package";
+
+// WEATHER FORECAST
+const wx = await fetchJSON(
+`https://api.open-meteo.com/v1/forecast?latitude=${WX_LAT}&longitude=${WX_LON}&daily=precipitation_sum,precipitation_probability_max,temperature_2m_max,temperature_2m_min&precipitation_unit=inch&timezone=auto&forecast_days=3`
+);
+
+let html = "";
+
+for (let i = 0; i < 3; i++) {
+
+const hiC = wx.daily.temperature_2m_max[i];
+const loC = wx.daily.temperature_2m_min[i];
+const hiF = hiC * 9/5 + 32;
+const loF = loC * 9/5 + 32;
+const precipIn = wx.daily.precipitation_sum[i] ?? 0;
+const precipProb = wx.daily.precipitation_probability_max?.[i] ?? 0;
+
+const r = risk(precipProb);
+
+html += `
+<div class="dayCard ${i===0?"today":""}">
+${i===0?`<div class="todayTag">TODAY</div>`:""}
+
+<div class="dayName">${formatLabel(wx.daily.time[i])}</div>
+
+<div>
+Precipitation: ${precipIn.toFixed(2)} in
+</div>
+
+<div class="bubble ${r}">
+${riskLabel(precipProb)} (${Math.round(precipProb)}%)
+</div>
+
+<div>
+H ${hiF.toFixed(0)}°F /
+${hiC.toFixed(0)}°C
+</div>
+
+<div>
+L ${loF.toFixed(0)}°F /
+${loC.toFixed(0)}°C
+</div>
+
+</div>
+`;
+}
+
+document.getElementById("forecast").innerHTML = html;
+
+let nwsMessage = "No active NWS alerts for this Zion point.";
+
+try {
+const alerts = await fetchJSON(
+`https://api.weather.gov/alerts/active?point=${WX_LAT},${WX_LON}`,
+{
+headers: {
+"Accept": "application/geo+json"
+}
+}
+);
+
+const features = alerts?.features || [];
+const relevant = features.filter(f => {
+const event = f?.properties?.event || "";
+return /flood|flash flood|thunderstorm|severe/i.test(event);
+});
+
+if (relevant.length) {
+nwsMessage = `NWS ALERT: ${relevant[0].properties.event}`;
+}
+} catch (e) {
+nwsMessage = "NWS alerts temporarily unavailable.";
+}
+
+document.getElementById("updated").innerText =
+`${nwsMessage} • Last Updated: ` + new Date().toLocaleString();
+}
+
+load();
+setInterval(load, 60000);
+</script>
+
+</body>
+</html>
+
