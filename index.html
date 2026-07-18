@@ -21,7 +21,7 @@
       padding: 3vh 4vw;
       box-sizing: border-box;
       display: grid;
-      grid-template-rows: auto auto auto auto auto 1fr;
+      grid-template-rows: auto auto auto auto 1fr;
       gap: 18px;
     }
 
@@ -53,10 +53,12 @@
       text-align: center;
     }
 
+    /* CFS CARD */
     .metrics .card:first-child {
       background: linear-gradient(180deg, #ead3bb, #dcc0a4);
     }
 
+    /* WATER TEMP CARD */
     .metrics .card:last-child {
       background: linear-gradient(180deg, #d9f0ff, #bcdff5);
     }
@@ -108,15 +110,6 @@
       font-weight: 900;
       color: white;
       box-shadow: inset 0 2px 6px rgba(0,0,0,0.15);
-      text-align: center;
-    }
-
-    .flashMeta {
-      text-align: center;
-      font-size: 13px;
-      opacity: 0.72;
-      margin-top: 8px;
-      line-height: 1.35;
     }
 
     .gearWrapper {
@@ -236,6 +229,7 @@
       margin-top: 14px;
       line-height: 1.4;
     }
+
   </style>
 </head>
 
@@ -246,6 +240,7 @@
   <div class="title">ZION NARROWS CURRENT CONDITIONS</div>
 
   <div class="metrics">
+
     <div class="card">
       <div id="flow" class="bigNumber">--</div>
       <div class="label">CFS</div>
@@ -256,18 +251,14 @@
       <div id="temp" class="tempNumber">--</div>
       <div class="label">WATER TEMP</div>
     </div>
+
   </div>
 
   <div class="statusLabel">NARROWS HIKE STATUS</div>
   <div id="status" class="statusBlock">LOADING</div>
 
-  <div>
-    <div class="statusLabel">FLASH FLOOD POTENTIAL</div>
-    <div id="flashFloodBar" class="statusBlock">LOADING</div>
-    <div id="flashFloodMeta" class="flashMeta"></div>
-  </div>
-
   <div class="gearWrapper">
+
     <div class="gearTitle">RECOMMENDED PACKAGE</div>
 
     <div class="gearBox">
@@ -277,6 +268,7 @@
     <div class="gearDisclaimer">
       Appropriate package selection may vary based on individual cold sensitivity.
     </div>
+
   </div>
 
   <div>
@@ -292,18 +284,11 @@ let lastCFS = null;
 
 const WX_LAT = 37.20007883740497;
 const WX_LON = -112.98688895601737;
-const FLASH_FLOOD_URL = "https://www.weather.gov/source/slc/flashflood/index.html?Zion";
 
 async function fetchJSON(url, options = {}) {
   const res = await fetch(url, options);
   if (!res.ok) throw new Error(`Request failed: ${res.status}`);
   return res.json();
-}
-
-async function fetchText(url, options = {}) {
-  const res = await fetch(url, options);
-  if (!res.ok) throw new Error(`Request failed: ${res.status}`);
-  return res.text();
 }
 
 function formatLabel(dateStr) {
@@ -323,227 +308,145 @@ function riskLabel(prob) {
   return "Chance of rain: HIGH";
 }
 
-function parseFlashFloodText(raw) {
-  const normalized = raw
-    .replace(/\r/g, "")
-    .replace(/\u00a0/g, " ")
-    .replace(/[ \t]+/g, " ");
+async function load() {
 
-  let updated = "";
-  const updatedMatch = normalized.match(/Updated:\s*([^\n<]+)/i);
-  if (updatedMatch) updated = updatedMatch[1].trim();
-
-  let ratingText = "";
-
-  const rowMatch = normalized.match(
-    /Flash Flood Potential Rating\s*\|\s*([^|\n]+)\s*\|\s*([^|\n]+)\s*\|\s*([^|\n]+)/i
+  const river = await fetchJSON(
+    "https://waterservices.usgs.gov/nwis/iv/?format=json&sites=09405500&parameterCd=00060,00010"
   );
 
-  if (rowMatch) {
-    ratingText = rowMatch[1].trim();
+  const series = river?.value?.timeSeries || [];
+
+  let cfs = null;
+  let tempC = null;
+
+  series.forEach(s => {
+    const code = s?.variable?.variableCode?.[0]?.value;
+    const val = s?.values?.[0]?.value?.[0]?.value;
+
+    if (code === "00060") cfs = Number(val);
+    if (code === "00010") tempC = Number(val);
+  });
+
+  const tempF = tempC * 9/5 + 32;
+
+  document.getElementById("flow").innerText = cfs.toFixed(0);
+
+  document.getElementById("temp").innerText =
+    `${tempF.toFixed(0)}°F / ${tempC.toFixed(0)}°C`;
+
+  // TREND
+  let trend = "→ steady";
+
+  if (lastCFS !== null) {
+    const diff = cfs - lastCFS;
+
+    if (diff > 5) trend = "↗ rising";
+    else if (diff < -5) trend = "↘ falling";
+  }
+
+  lastCFS = cfs;
+
+  document.getElementById("trend").innerText = trend;
+
+  // STATUS
+  let status = "";
+  let color = "";
+
+  if (cfs <= 119) {
+    status = "OPEN";
+    color = "#2f6f5e";
+  } else if (cfs <= 149) {
+    status = "BOTTOM-UP OPEN / TOP-DOWN CLOSED";
+    color = "#c08a3e";
   } else {
-    const fallbackMatch = normalized.match(
-      /Flash Flood Potential Rating[\s\S]{0,400}?(not expected|possible|probable|expected)/i
-    );
-    if (fallbackMatch) ratingText = fallbackMatch[1].trim();
+    status = "CLOSED";
+    color = "#a33a2a";
   }
 
-  return { updated, ratingText };
-}
+  const statusEl = document.getElementById("status");
 
-function mapFlashFloodRating(ratingText) {
-  const t = (ratingText || "").toLowerCase();
+  statusEl.innerText = status;
+  statusEl.style.background = color;
 
-  if (t.includes("not expected")) {
-    return {
-      label: "NOT EXPECTED",
-      color: "#2f6f5e"
-    };
-  }
+  // STATIC PACKAGE RECOMMENDATION
+  document.getElementById("gearToday").innerText =
+    "Footwear Package";
 
-  if (t.includes("possible")) {
-    return {
-      label: "POSSIBLE",
-      color: "#c08a3e"
-    };
-  }
+  // WEATHER FORECAST
+  const wx = await fetchJSON(
+    `https://api.open-meteo.com/v1/forecast?latitude=${WX_LAT}&longitude=${WX_LON}&daily=precipitation_sum,precipitation_probability_max,temperature_2m_max,temperature_2m_min&precipitation_unit=inch&timezone=auto&forecast_days=3`
+  );
 
-  if (t.includes("probable")) {
-    return {
-      label: "PROBABLE",
-      color: "#b55a2a"
-    };
-  }
+  let html = "";
 
-  if (t.includes("expected")) {
-    return {
-      label: "EXPECTED",
-      color: "#a33a2a"
-    };
-  }
+  for (let i = 0; i < 3; i++) {
 
-  return {
-    label: "UNAVAILABLE",
-    color: "#6b4f3a"
-  };
-}
+    const hiC = wx.daily.temperature_2m_max[i];
+    const loC = wx.daily.temperature_2m_min[i];
+    const hiF = hiC * 9/5 + 32;
+    const loF = loC * 9/5 + 32;
+    const precipIn = wx.daily.precipitation_sum[i] ?? 0;
+    const precipProb = wx.daily.precipitation_probability_max?.[i] ?? 0;
 
-async function load() {
-  try {
-    const river = await fetchJSON(
-      "https://waterservices.usgs.gov/nwis/iv/?format=json&sites=09405500&parameterCd=00060,00010"
-    );
+    const r = risk(precipProb);
 
-    const series = river?.value?.timeSeries || [];
-    let cfs = null;
-    let tempC = null;
+    html += `
+      <div class="dayCard ${i===0?"today":""}">
+        ${i===0?`<div class="todayTag">TODAY</div>`:""}
 
-    series.forEach(s => {
-      const code = s?.variable?.variableCode?.[0]?.value;
-      const val = s?.values?.[0]?.value?.[0]?.value;
+        <div class="dayName">${formatLabel(wx.daily.time[i])}</div>
 
-      if (code === "00060") cfs = Number(val);
-      if (code === "00010") tempC = Number(val);
-    });
-
-    const tempF = tempC * 9/5 + 32;
-
-    document.getElementById("flow").innerText = cfs.toFixed(0);
-    document.getElementById("temp").innerText =
-      `${tempF.toFixed(0)}°F / ${tempC.toFixed(0)}°C`;
-
-    let trend = "→ steady";
-
-    if (lastCFS !== null) {
-      const diff = cfs - lastCFS;
-      if (diff > 5) trend = "↗ rising";
-      else if (diff < -5) trend = "↘ falling";
-    }
-
-    lastCFS = cfs;
-    document.getElementById("trend").innerText = trend;
-
-    let status = "";
-    let color = "";
-
-    if (cfs <= 119) {
-      status = "OPEN";
-      color = "#2f6f5e";
-    } else if (cfs <= 149) {
-      status = "BOTTOM-UP OPEN / TOP-DOWN CLOSED";
-      color = "#c08a3e";
-    } else {
-      status = "CLOSED";
-      color = "#a33a2a";
-    }
-
-    const statusEl = document.getElementById("status");
-    statusEl.innerText = status;
-    statusEl.style.background = color;
-
-    try {
-      const flashPage = await fetchText(FLASH_FLOOD_URL);
-      const { updated, ratingText } = parseFlashFloodText(flashPage);
-      const mapped = mapFlashFloodRating(ratingText);
-
-      const flashEl = document.getElementById("flashFloodBar");
-      flashEl.innerText = mapped.label;
-      flashEl.style.background = mapped.color;
-
-      document.getElementById("flashFloodMeta").innerText =
-        updated ? `Updated: ${updated}` : "";
-    } catch (e) {
-      const flashEl = document.getElementById("flashFloodBar");
-      flashEl.innerText = "UNAVAILABLE";
-      flashEl.style.background = "#6b4f3a";
-      document.getElementById("flashFloodMeta").innerText =
-        "Unable to load Zion flash flood potential from NWS.";
-    }
-
-    document.getElementById("gearToday").innerText = "Footwear Package";
-
-    const wx = await fetchJSON(
-      `https://api.open-meteo.com/v1/forecast?latitude=${WX_LAT}&longitude=${WX_LON}&daily=precipitation_sum,precipitation_probability_max,temperature_2m_max,temperature_2m_min&precipitation_unit=inch&timezone=auto&forecast_days=3`
-    );
-
-    let html = "";
-
-    for (let i = 0; i < 3; i++) {
-      const hiC = wx.daily.temperature_2m_max[i];
-      const loC = wx.daily.temperature_2m_min[i];
-      const hiF = hiC * 9/5 + 32;
-      const loF = loC * 9/5 + 32;
-      const precipIn = wx.daily.precipitation_sum[i] ?? 0;
-      const precipProb = wx.daily.precipitation_probability_max?.[i] ?? 0;
-
-      const r = risk(precipProb);
-
-      html += `
-        <div class="dayCard ${i===0 ? "today" : ""}">
-          ${i===0 ? `<div class="todayTag">TODAY</div>` : ""}
-
-          <div class="dayName">${formatLabel(wx.daily.time[i])}</div>
-
-          <div>
-            Precipitation: ${precipIn.toFixed(2)} in
-          </div>
-
-          <div class="bubble ${r}">
-            ${riskLabel(precipProb)} (${Math.round(precipProb)}%)
-          </div>
-
-          <div>
-            H ${hiF.toFixed(0)}°F /
-            ${hiC.toFixed(0)}°C
-          </div>
-
-          <div>
-            L ${loF.toFixed(0)}°F /
-            ${loC.toFixed(0)}°C
-          </div>
+        <div>
+          Precipitation: ${precipIn.toFixed(2)} in
         </div>
-      `;
-    }
 
-    document.getElementById("forecast").innerHTML = html;
+        <div class="bubble ${r}">
+          ${riskLabel(precipProb)} (${Math.round(precipProb)}%)
+        </div>
 
-    let nwsMessage = "No active NWS alerts for this Zion point.";
+        <div>
+          H ${hiF.toFixed(0)}°F /
+          ${hiC.toFixed(0)}°C
+        </div>
 
-    try {
-      const alerts = await fetchJSON(
-        `https://api.weather.gov/alerts/active?point=${WX_LAT},${WX_LON}`,
-        {
-          headers: {
-            "Accept": "application/geo+json"
-          }
-        }
-      );
+        <div>
+          L ${loF.toFixed(0)}°F /
+          ${loC.toFixed(0)}°C
+        </div>
 
-      const features = alerts?.features || [];
-      const relevant = features.filter(f => {
-        const event = f?.properties?.event || "";
-        return /flood|flash flood|thunderstorm|severe/i.test(event);
-      });
-
-      if (relevant.length) {
-        nwsMessage = `NWS ALERT: ${relevant[0].properties.event}`;
-      }
-    } catch (e) {
-      nwsMessage = "NWS alerts temporarily unavailable.";
-    }
-
-    document.getElementById("updated").innerText =
-      `${nwsMessage} • Last Updated: ${new Date().toLocaleString()}`;
-  } catch (err) {
-    console.error(err);
-    document.getElementById("forecast").innerHTML = `
-      <div class="dayCard" style="grid-column: 1 / -1;">
-        Unable to load current forecast data.
       </div>
     `;
-    document.getElementById("updated").innerText =
-      "Data temporarily unavailable • " + new Date().toLocaleString();
   }
+
+  document.getElementById("forecast").innerHTML = html;
+
+  let nwsMessage = "No active NWS alerts for this Zion point.";
+
+  try {
+    const alerts = await fetchJSON(
+      `https://api.weather.gov/alerts/active?point=${WX_LAT},${WX_LON}`,
+      {
+        headers: {
+          "Accept": "application/geo+json"
+        }
+      }
+    );
+
+    const features = alerts?.features || [];
+    const relevant = features.filter(f => {
+      const event = f?.properties?.event || "";
+      return /flood|flash flood|thunderstorm|severe/i.test(event);
+    });
+
+    if (relevant.length) {
+      nwsMessage = `NWS ALERT: ${relevant[0].properties.event}`;
+    }
+  } catch (e) {
+    nwsMessage = "NWS alerts temporarily unavailable.";
+  }
+
+  document.getElementById("updated").innerText =
+    `${nwsMessage} • Last Updated: ` + new Date().toLocaleString();
 }
 
 load();
