@@ -348,7 +348,7 @@ async function load() {
 
   // WEATHER FORECAST
   const wx = await fetch(
-    "https://api.open-meteo.com/v1/forecast?latitude=37.2&longitude=-113.0&daily=precipitation_sum,temperature_2m_max,temperature_2m_min&timezone=auto"
+    https://api.open-meteo.com/v1/forecast?latitude=37.285&longitude=-112.947&daily=precipitation_probability_max,precipitation_sum,temperature_2m_max,temperature_2m_min&temperature_unit=celsius&precipitation_unit=inch&timezone=America%2FDenver
   ).then(r => r.json());
 
   const labels = [];
@@ -360,12 +360,6 @@ async function load() {
     labels.push(`${d.getMonth()+1}-${d.getDate()}`);
   }
 
-  function risk(v) {
-    if (v < 0.25) return "low";
-    if (v < 0.75) return "med";
-    return "high";
-  }
-
   let html = "";
 
   for (let i = 0; i < 3; i++) {
@@ -373,43 +367,42 @@ async function load() {
     const hiF = wx.daily.temperature_2m_max[i] * 9/5 + 32;
     const loF = wx.daily.temperature_2m_min[i] * 9/5 + 32;
 
-    const r = risk(wx.daily.precipitation_sum[i]);
+    const rainChance = wx.daily.precipitation_probability_max[i];
 
-    const label =
-      r === "low"
-        ? "Chance of rain: LOW"
-        : r === "med"
-          ? "Chance of rain: MODERATE"
-          : "Chance of rain: HIGH";
+let bubbleClass = "low";
 
-    html += `
-      <div class="dayCard ${i===0?"today":""}">
-        ${i===0?`<div class="todayTag">TODAY</div>`:""}
+if (rainChance >= 60) {
+  bubbleClass = "high";
+} else if (rainChance >= 30) {
+  bubbleClass = "med";
+}
 
-        <div class="dayName">${labels[i]}</div>
+html += `
+  <div class="dayCard ${i===0?"today":""}">
+    ${i===0?`<div class="todayTag">TODAY</div>`:""}
 
-        <div>
-          Precipitation: ${wx.daily.precipitation_sum[i]} in
-        </div>
+    <div class="dayName">${labels[i]}</div>
 
-        <div class="bubble ${r}">
-          ${label}
-        </div>
+    <div>
+      Rain: ${rainChance}%
+    </div>
 
-        <div>
-          H ${hiF.toFixed(0)}°F /
-          ${wx.daily.temperature_2m_max[i].toFixed(0)}°C
-        </div>
+    <div class="bubble ${bubbleClass}">
+      ${rainChance}% Chance of Rain
+    </div>
 
-        <div>
-          L ${loF.toFixed(0)}°F /
-          ${wx.daily.temperature_2m_min[i].toFixed(0)}°C
-        </div>
+    <div>
+      H ${hiF.toFixed(0)}°F /
+      ${wx.daily.temperature_2m_max[i].toFixed(0)}°C
+    </div>
 
-      </div>
-    `;
-  }
+    <div>
+      L ${loF.toFixed(0)}°F /
+      ${wx.daily.temperature_2m_min[i].toFixed(0)}°C
+    </div>
 
+  </div>
+`;
   document.getElementById("forecast").innerHTML = html;
 
   document.getElementById("updated").innerText =
