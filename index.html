@@ -1,285 +1,457 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Zion Narrows Conditions</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Zion Narrows Conditions</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Paytone+One&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Paytone+One&display=swap" rel="stylesheet">
 
-  <style>
-    body {
-      margin: 0;
-      background: #f6efe6;
-      font-family: "Century Gothic", Arial, sans-serif;
-      color: #2b2b2b;
-    }
+<style>
+body {
+margin: 0;
+background: #f6efe6;
+font-family: "Century Gothic", Arial, sans-serif;
+color: #2b2b2b;
+}
 
-    .wrap {
-      width: 100vw;
-      min-height: 100vh;
-      padding: 3vh 4vw;
-      box-sizing: border-box;
-      display: grid;
-      grid-template-rows: auto auto auto auto 1fr;
-      gap: 18px;
-    }
+.wrap {
+width: 100vw;
+height: 100vh;
+padding: 3vh 4vw;
+box-sizing: border-box;
+display: grid;
+grid-template-rows: auto auto auto auto 1fr;
+gap: 18px;
+}
 
-    .title {
-      text-align: center;
-      font-size: 44px;
-      font-family: "Paytone One", sans-serif;
-      letter-spacing: 3px;
-      color: #5a4333;
-    }
+.title {
+text-align: center;
+font-size: 44px;
+font-family: "Paytone One", sans-serif;
+letter-spacing: 3px;
+color: #5a4333;
+}
 
-    .metrics {
-      display: flex;
-      justify-content: space-between;
-      gap: 24px;
-    }
+.metrics {
+display: flex;
+justify-content: space-between;
+gap: 24px;
+}
 
-    .card {
-      flex: 1;
-      border-radius: 18px;
-      padding: 18px;
-      box-shadow: 0 12px 25px rgba(70, 50, 30, 0.12);
-      border: 1px solid #e7d6c2;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-    }
+.card {
+flex: 1;
+border-radius: 18px;
+padding: 18px;
+box-shadow: 0 12px 25px rgba(70, 50, 30, 0.12);
+border: 1px solid #e7d6c2;
 
-    .metrics .card:first-child {
-      background: linear-gradient(180deg, #ead3bb, #dcc0a4);
-    }
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+text-align: center;
+}
 
-    .metrics .card:last-child {
-      background: linear-gradient(180deg, #d9f0ff, #bcdff5);
-    }
+/* CFS CARD */
+.metrics .card:first-child {
+background: linear-gradient(180deg, #ead3bb, #dcc0a4);
+}
 
-    .bigNumber {
-      font-size: 110px;
-      font-weight: 900;
-      line-height: 1;
-    }
+/* WATER TEMP CARD */
+.metrics .card:last-child {
+background: linear-gradient(180deg, #d9f0ff, #bcdff5);
+}
 
-    .tempNumber {
-      font-size: 75px;
-      font-weight: 900;
-      line-height: 1;
-    }
+.bigNumber {
+font-size: 110px;
+font-weight: 900;
+line-height: 1;
+}
 
-    .label {
-      margin-top: 8px;
-      font-size: 20px;
-      font-weight: 800;
-      letter-spacing: 2px;
-      opacity: 0.75;
-    }
+.tempNumber {
+font-size: 75px;
+font-weight: 900;
+line-height: 1;
+}
 
-    .trendInside {
-      margin-top: 10px;
-      font-size: 18px;
-      font-weight: 700;
-      opacity: 0.85;
-    }
+.label {
+margin-top: 8px;
+font-size: 20px;
+font-weight: 800;
+letter-spacing: 2px;
+opacity: 0.75;
+}
 
-    .statusLabel {
-      text-align: center;
-      font-size: 16px;
-      font-weight: 800;
-      letter-spacing: 2px;
-      opacity: 0.7;
-      margin-bottom: -6px;
-    }
+.trendInside {
+margin-top: 10px;
+font-size: 18px;
+font-weight: 700;
+opacity: 0.85;
+}
 
-    .statusBlock {
-      width: 100%;
-      border-radius: 18px;
-      padding: 10px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 28px;
-      font-weight: 900;
-      color: white;
-      box-shadow: inset 0 2px 6px rgba(0,0,0,0.15);
-      text-align: center;
-    }
+.statusLabel {
+text-align: center;
+font-size: 16px;
+font-weight: 800;
+letter-spacing: 2px;
+opacity: 0.7;
+margin-bottom: -6px;
+}
 
-    .gearWrapper {
-      background: linear-gradient(180deg, #fff7ec, #f2e2cf);
-      border-radius: 18px;
-      padding: 18px;
-      border: 1px solid #e7d6c2;
-    }
+.statusBlock {
+width: 100%;
+border-radius: 18px;
+padding: 10px;
+display: flex;
+justify-content: center;
+align-items: center;
+font-size: 28px;
+font-weight: 900;
+color: white;
+box-shadow: inset 0 2px 6px rgba(0,0,0,0.15);
+}
 
-    .gearTitle {
-      text-align: center;
-      font-weight: 900;
-      margin-bottom: 14px;
-      letter-spacing: 2px;
-    }
+.gearWrapper {
+background: linear-gradient(180deg, #fff7ec, #f2e2cf);
+border-radius: 18px;
+padding: 18px;
+border: 1px solid #e7d6c2;
+}
 
-    .gearBox {
-      background: linear-gradient(180deg, #fff7ec, #f2e2cf);
-      border: 1px solid #e7d6c2;
-      border-radius: 16px;
-      padding: 24px;
-      min-height: 110px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-    }
+.gearTitle {
+text-align: center;
+font-weight: 900;
+margin-bottom: 14px;
+letter-spacing: 2px;
+}
 
-    .gearBoxValue {
-      font-size: 26px;
-      font-weight: 900;
-      line-height: 1.4;
-    }
+.gearBox {
+background: linear-gradient(180deg, #fff7ec, #f2e2cf);
+border: 1px solid #e7d6c2;
+border-radius: 16px;
+padding: 24px;
+min-height: 110px;
 
-    .gearDisclaimer {
-      text-align: center;
-      margin-top: 12px;
-      font-size: 13px;
-      opacity: 0.7;
-      font-style: italic;
-    }
+display: flex;
+justify-content: center;
+align-items: center;
+text-align: center;
+}
 
-    .forecastTitle {
-      text-align: center;
-      font-size: 24px;
-      font-family: "Paytone One", sans-serif;
-      letter-spacing: 2px;
-      margin-bottom: 14px;
-      opacity: 0.85;
-      color: #5a4333;
-    }
+.gearBoxValue {
+font-size: 26px;
+font-weight: 900;
+line-height: 1.4;
+}
 
-    .forecast {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 22px;
-    }
+.gearDisclaimer {
+text-align: center;
+margin-top: 12px;
+font-size: 13px;
+opacity: 0.7;
+font-style: italic;
+}
 
-    .dayCard {
-      background: linear-gradient(180deg, #fff7ec, #f2e2cf);
-      border-radius: 16px;
-      padding: 26px 20px;
-      text-align: center;
-      border: 1px solid #e7d6c2;
-      position: relative;
-    }
+.forecastTitle {
+text-align: center;
+font-size: 24px;
+font-family: "Paytone One", sans-serif;
+letter-spacing: 2px;
+margin-bottom: 14px;
+opacity: 0.85;
+color: #5a4333;
+}
 
-    .today {
-      border: 2px solid #6b4f3a;
-      background: #f3e6d6;
-    }
+.forecast {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 22px;
+}
 
-    .todayTag {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      background: #6b4f3a;
-      color: white;
-      font-size: 12px;
-      font-weight: 900;
-      padding: 5px 10px;
-      border-radius: 999px;
-    }
+.dayCard {
+background: linear-gradient(180deg, #fff7ec, #f2e2cf);
+border-radius: 16px;
+padding: 26px 20px;
+text-align: center;
+border: 1px solid #e7d6c2;
+position: relative;
+}
 
-    .dayName {
-      font-weight: 900;
-      font-size: 28px;
-      margin-bottom: 14px;
-      color: #3b2f28;
-    }
+.today {
+border: 2px solid #6b4f3a;
+background: #f3e6d6;
+}
 
-    .forecastLine {
-      font-size: 24px;
-      line-height: 1.6;
-    }
+.todayTag {
+position: absolute;
+top: 8px;
+right: 8px;
+background: #6b4f3a;
+color: white;
+font-size: 12px;
+font-weight: 900;
+padding: 5px 10px;
+border-radius: 999px;
+}
 
-    .bubble {
-      display: inline-block;
-      padding: 6px 12px;
-      border-radius: 999px;
-      font-size: 14px;
-      font-weight: 800;
-      color: white;
-      margin-top: 10px;
-      opacity: 0.95;
-    }
+.dayName {
+font-weight: 900;
+font-size: 28px;
+margin-bottom: 14px;
+color: #3b2f28;
+}
 
-    .low { background: #4f7d6b; }
-    .med { background: #c08a3e; }
-    .high { background: #a33a2a; }
+.dayCard div {
+font-size: 24px;
+line-height: 1.6;
+}
 
-    .updated {
-      text-align: center;
-      font-size: 14px;
-      opacity: 0.75;
-      margin-top: 14px;
-      line-height: 1.4;
-    }
+.bubble {
+display: inline-block;
+padding: 6px 12px;
+border-radius: 999px;
+font-size: 14px;
+font-weight: 800;
+color: white;
+margin-top: 10px;
+opacity: 0.95;
+}
 
-    .screenDisclaimer {
-      text-align: center;
-      margin-top: 10px;
-      font-size: 12px;
-      line-height: 1.45;
-      opacity: 0.68;
-      max-width: 900px;
-      margin-left: auto;
-      margin-right: auto;
-    }
+.low { background: #4f7d6b; }
+.med { background: #c08a3e; }
+.high { background: #a33a2a; }
 
-    @media (max-width: 900px) {
-      .metrics,
-      .forecast {
-        grid-template-columns: 1fr;
-        display: grid;
-      }
+.updated {
+text-align: center;
+font-size: 14px;
+opacity: 0.75;
+margin-top: 14px;
+line-height: 1.4;
+}
 
-      .bigNumber {
-        font-size: 72px;
-      }
-
-      .tempNumber {
-        font-size: 52px;
-      }
-
-      .dayName {
-        font-size: 22px;
-      }
-
-      .forecastLine {
-        font-size: 18px;
-      }
-    }
-  </style>
+</style>
 </head>
 
 <body>
+
 <div class="wrap">
 
-  <div class="title">ZION NARROWS CURRENT CONDITIONS</div>
+<div class="title">ZION NARROWS CURRENT CONDITIONS</div>
 
-  <div class="metrics">
-    <div class="card">
-      <div id="flow" class="bigNumber">--</div>
-      <div class="label">CFS</div>
-      <div id="trend" class="trendInside">Loading...</div>
-    </div>
+<div class="metrics">
 
-    <div class="card">
-      <div id="temp" class="tempNumber">--</div>
-      <div class="label">WATER TEMP</div>
-    </div>
-  </div>
+<div class="card">
+<div id="flow" class="bigNumber">--</div>
+<div class="label">CFS</div>
+<div id="trend" class="trendInside">--</div>
+</div>
 
-  <div 
+<div class="card">
+<div id="temp" class="tempNumber">--</div>
+<div class="label">WATER TEMP</div>
+</div>
+
+</div>
+
+<div class="statusLabel">NARROWS HIKE STATUS</div>
+<div id="status" class="statusBlock">LOADING</div>
+
+<div class="gearWrapper">
+
+<div class="gearTitle">RECOMMENDED PACKAGE</div>
+
+<div class="gearBox">
+<div id="gearToday" class="gearBoxValue">--</div>
+</div>
+
+<div class="gearDisclaimer">
+Appropriate package selection may vary based on individual cold sensitivity.
+</div>
+
+</div>
+
+<div>
+<div class="forecastTitle">3-DAY ZION FORECAST</div>
+<div id="forecast" class="forecast"></div>
+<div id="updated" class="updated"></div>
+</div>
+
+</div>
+
+<script>
+let lastCFS = null;
+
+const WX_LAT = 37.20007883740497;
+const WX_LON = -112.98688895601737;
+
+async function fetchJSON(url, options = {}) {
+const res = await fetch(url, options);
+if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+return res.json();
+}
+
+function formatLabel(dateStr) {
+const d = new Date(dateStr + "T12:00:00");
+return `${d.getMonth() + 1}-${d.getDate()}`;
+}
+
+function risk(prob) {
+if (prob < 20) return "low";
+if (prob < 50) return "med";
+return "high";
+}
+
+function riskLabel(prob) {
+if (prob < 20) return "Chance of rain: LOW";
+if (prob < 50) return "Chance of rain: MODERATE";
+return "Chance of rain: HIGH";
+}
+
+async function load() {
+
+const river = await fetchJSON(
+"https://waterservices.usgs.gov/nwis/iv/?format=json&sites=09405500&parameterCd=00060,00010"
+);
+
+const series = river?.value?.timeSeries || [];
+
+let cfs = null;
+let tempC = null;
+
+series.forEach(s => {
+const code = s?.variable?.variableCode?.[0]?.value;
+const val = s?.values?.[0]?.value?.[0]?.value;
+
+if (code === "00060") cfs = Number(val);
+if (code === "00010") tempC = Number(val);
+});
+
+const tempF = tempC * 9/5 + 32;
+
+document.getElementById("flow").innerText = cfs.toFixed(0);
+
+document.getElementById("temp").innerText =
+`${tempF.toFixed(0)}°F / ${tempC.toFixed(0)}°C`;
+
+// TREND
+let trend = "→ steady";
+
+if (lastCFS !== null) {
+const diff = cfs - lastCFS;
+
+if (diff > 5) trend = "↗ rising";
+else if (diff < -5) trend = "↘ falling";
+}
+
+lastCFS = cfs;
+
+document.getElementById("trend").innerText = trend;
+
+// STATUS
+let status = "";
+let color = "";
+
+if (cfs <= 119) {
+status = "OPEN";
+color = "#2f6f5e";
+} else if (cfs <= 149) {
+status = "BOTTOM-UP OPEN / TOP-DOWN CLOSED";
+color = "#c08a3e";
+} else {
+status = "CLOSED";
+color = "#a33a2a";
+}
+
+const statusEl = document.getElementById("status");
+
+statusEl.innerText = status;
+statusEl.style.background = color;
+
+// STATIC PACKAGE RECOMMENDATION
+document.getElementById("gearToday").innerText =
+"Footwear Package";
+
+// WEATHER FORECAST
+const wx = await fetchJSON(
+`https://api.open-meteo.com/v1/forecast?latitude=${WX_LAT}&longitude=${WX_LON}&daily=precipitation_sum,precipitation_probability_max,temperature_2m_max,temperature_2m_min&precipitation_unit=inch&timezone=auto&forecast_days=3`
+);
+
+let html = "";
+
+for (let i = 0; i < 3; i++) {
+
+const hiC = wx.daily.temperature_2m_max[i];
+const loC = wx.daily.temperature_2m_min[i];
+const hiF = hiC * 9/5 + 32;
+const loF = loC * 9/5 + 32;
+const precipIn = wx.daily.precipitation_sum[i] ?? 0;
+const precipProb = wx.daily.precipitation_probability_max?.[i] ?? 0;
+
+const r = risk(precipProb);
+
+html += `
+<div class="dayCard ${i===0?"today":""}">
+${i===0?`<div class="todayTag">TODAY</div>`:""}
+
+<div class="dayName">${formatLabel(wx.daily.time[i])}</div>
+
+<div>
+Precipitation: ${precipIn.toFixed(2)} in
+</div>
+
+<div class="bubble ${r}">
+${riskLabel(precipProb)} (${Math.round(precipProb)}%)
+</div>
+
+<div>
+H ${hiF.toFixed(0)}°F /
+${hiC.toFixed(0)}°C
+</div>
+
+<div>
+L ${loF.toFixed(0)}°F /
+${loC.toFixed(0)}°C
+</div>
+
+</div>
+`;
+}
+
+document.getElementById("forecast").innerHTML = html;
+
+let nwsMessage = "No active NWS alerts for this Zion point.";
+
+try {
+const alerts = await fetchJSON(
+`https://api.weather.gov/alerts/active?point=${WX_LAT},${WX_LON}`,
+{
+headers: {
+"Accept": "application/geo+json"
+}
+}
+);
+
+const features = alerts?.features || [];
+const relevant = features.filter(f => {
+const event = f?.properties?.event || "";
+return /flood|flash flood|thunderstorm|severe/i.test(event);
+});
+
+if (relevant.length) {
+nwsMessage = `NWS ALERT: ${relevant[0].properties.event}`;
+}
+} catch (e) {
+nwsMessage = "NWS alerts temporarily unavailable.";
+}
+
+document.getElementById("updated").innerText =
+`${nwsMessage} • Last Updated: ` + new Date().toLocaleString();
+}
+
+load();
+setInterval(load, 60000);
+</script>
+
+</body>
+</html>
