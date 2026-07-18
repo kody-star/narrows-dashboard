@@ -21,7 +21,7 @@
       padding: 3vh 4vw;
       box-sizing: border-box;
       display: grid;
-      grid-template-rows: auto auto auto auto 1fr;
+      grid-template-rows: auto auto auto auto auto 1fr;
       gap: 18px;
     }
 
@@ -110,6 +110,15 @@
       font-weight: 900;
       color: white;
       box-shadow: inset 0 2px 6px rgba(0,0,0,0.15);
+      text-align: center;
+    }
+
+    .flashMeta {
+      text-align: center;
+      font-size: 13px;
+      opacity: 0.72;
+      margin-top: 8px;
+      line-height: 1.35;
     }
 
     .gearWrapper {
@@ -257,6 +266,12 @@
   <div class="statusLabel">NARROWS HIKE STATUS</div>
   <div id="status" class="statusBlock">LOADING</div>
 
+  <div>
+    <div class="statusLabel">FLASH FLOOD POTENTIAL</div>
+    <div id="flashFloodBar" class="statusBlock">LOADING</div>
+    <div id="flashFloodMeta" class="flashMeta"></div>
+  </div>
+
   <div class="gearWrapper">
 
     <div class="gearTitle">RECOMMENDED PACKAGE</div>
@@ -284,11 +299,18 @@ let lastCFS = null;
 
 const WX_LAT = 37.20007883740497;
 const WX_LON = -112.98688895601737;
+const FLASH_FLOOD_URL = "https://www.weather.gov/source/slc/flashflood/index.html?Zion";
 
 async function fetchJSON(url, options = {}) {
   const res = await fetch(url, options);
   if (!res.ok) throw new Error(`Request failed: ${res.status}`);
   return res.json();
+}
+
+async function fetchText(url, options = {}) {
+  const res = await fetch(url, options);
+  if (!res.ok) throw new Error(`Request failed: ${res.status}`);
+  return res.text();
 }
 
 function formatLabel(dateStr) {
@@ -306,6 +328,57 @@ function riskLabel(prob) {
   if (prob < 20) return "Chance of rain: LOW";
   if (prob < 50) return "Chance of rain: MODERATE";
   return "Chance of rain: HIGH";
+}
+
+function parseFlashFloodText(raw) {
+  const normalized = raw.replace(/\s+/g, " ").trim();
+
+  let updated = "";
+  const updatedMatch = normalized.match(/Updated:\s*([^|]+?)\s*(?:\||Quick Look Forecast|Detailed Forecast)/i);
+  if (updatedMatch) updated = updatedMatch[1].trim();
+
+  let ratingText = "";
+  const ratingMatch = normalized.match(/Flash Flood Potential Rating\s*\|\s*([^|]+?)\s*(?:\||HeatRisk)/i);
+  if (ratingMatch) ratingText = ratingMatch[1].trim();
+
+  return { updated, ratingText };
+}
+
+function mapFlashFloodRating(ratingText) {
+  const t = ratingText.toLowerCase();
+
+  if (t.includes("not expected")) {
+    return {
+      label: "NOT EXPECTED",
+      color: "#2f6f5e"
+    };
+  }
+
+  if (t.includes("possible")) {
+    return {
+      label: "POSSIBLE",
+      color: "#c08a3e"
+    };
+  }
+
+  if (t.includes("probable")) {
+    return {
+      label: "PROBABLE",
+      color: "#b55a2a"
+    };
+  }
+
+  if (t.includes("expected")) {
+    return {
+      label: "EXPECTED",
+      color: "#a33a2a"
+    };
+  }
+
+  return {
+    label: "SEE NWS",
+    color: "#6b4f3a"
+  };
 }
 
 async function load() {
@@ -367,6 +440,28 @@ async function load() {
 
   statusEl.innerText = status;
   statusEl.style.background = color;
+
+  // FLASH FLOOD POTENTIAL
+  try {
+    const flashPage = await fetchText(FLASH_FLOOD_URL);
+    const { updated, ratingText } = parseFlashFloodText(flashPage);
+    const mapped = mapFlashFloodRating(ratingText);
+
+    const flashEl = document.getElementById("flashFloodBar");
+    flashEl.innerText = mapped.label;
+    flashEl.style.background = mapped.color;
+
+    document.getElementById("flashFloodMeta").innerText =
+      ratingText
+        ? `${ratingText}${updated ? " • Updated: " + updated : ""}`
+        : "Flash flood potential currently unavailable.";
+  } catch (e) {
+    const flashEl = document.getElementById("flashFloodBar");
+    flashEl.innerText = "UNAVAILABLE";
+    flashEl.style.background = "#6b4f3a";
+    document.getElementById("flashFloodMeta").innerText =
+      "Unable to load Zion flash flood potential from NWS.";
+  }
 
   // STATIC PACKAGE RECOMMENDATION
   document.getElementById("gearToday").innerText =
