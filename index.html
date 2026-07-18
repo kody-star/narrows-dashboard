@@ -348,9 +348,9 @@ async function load() {
 
   // WEATHER FORECAST
   const wx = await fetch(
-    "https://api.open-meteo.com/v1/forecast?latitude=37.2&longitude=-113.0&daily=precipitation_sum,temperature_2m_max,temperature_2m_min&timezone=auto"
-  ).then(r => r.json());
-
+  "https://api.open-meteo.com/v1/forecast?latitude=37.2001&longitude=-112.9869&daily=precipitation_sum,temperature_2m_max,temperature_2m_min&timezone=auto"
+).then(r => r.json());
+  
   const labels = [];
 
   for (let i = 0; i < 3; i++) {
