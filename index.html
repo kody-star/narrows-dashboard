@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html>
 <head>
@@ -396,10 +397,6 @@ ${i===0?`<div class="todayTag">TODAY</div>`:""}
 
 <div class="dayName">${formatLabel(wx.daily.time[i])}</div>
 
-<div>
-Precipitation: ${precipIn.toFixed(2)} in
-</div>
-
 <div class="bubble ${r}">
 ${riskLabel(precipProb)} (${Math.round(precipProb)}%)
 </div>
@@ -455,4 +452,8 @@ setInterval(load, 60000);
 
 </body>
 </html>
+```
+
+**The only functional/display change is that `Precipitation: X.XX in` no longer appears.** The precipitation probability and LOW/MODERATE/HIGH rain indicator are still there exactly as before.
+
 
